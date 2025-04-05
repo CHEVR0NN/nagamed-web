@@ -18,7 +18,7 @@ const App = () => {
     <div style={{ display: 'flex' }}>
       {showNavbar && <Navbar />}
       
-      <div style={{ marginLeft: showNavbar ? '20%' : '0', width: '100%' }}>
+      <div style={{ marginLeft: showNavbar ? '17%' : '0', width: '100%' }}>
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/Signup" element={<Signup />} />

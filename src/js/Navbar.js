@@ -1,25 +1,40 @@
-import * as React from "react";
+import React from "react";
 import { Link } from 'react-router-dom';
 import "../css/Navbar.css";
-
+import { GridView, AssignmentTurnedInOutlined, FreeCancellationOutlined, MedicalServicesOutlined, MailOutlineRounded, AccountBalanceWalletOutlined, SettingsOutlined } from '@mui/icons-material';
 const Navbar = () => {
     return (
         <div className="navbar">
-            
-        <p className="navbarheading">
-            <span className="title1">Naga</span>
-            <span className="title2">Med</span>
-        </p>
+            <p className="navbarheading">
+                <span className="title1">Naga</span>
+                <span className="title2">Med</span>
+            </p>
 
-        <Link to="/Dashboard">Dashboard</Link>
-        <Link to="/Appointments">Appointments</Link>
-        <Link to="/doctors">Doctors</Link>
-        <Link to="/patients">Patients</Link>
-        <Link to="/messages">Messages</Link>
-        <Link to="/reports">Reports</Link>
-        <Link to="/settings">Settings</Link>
-      </div>
+            <div className="routes">
+                <Link to="/Dashboard" className="navbarelement">
+                <GridView/> Dashboard
+                </Link>
+                <Link to="/Appointments" className="navbarelement">
+                <AssignmentTurnedInOutlined/> Appointments
+                </Link>
+                <Link to="/Doctors" className="navbarelement">
+                <FreeCancellationOutlined/> Doctors
+                </Link>
+                <Link to="/Patients" className="navbarelement">
+                <MedicalServicesOutlined/> Patients
+                </Link>
+                <Link to="/Messages" className="navbarelement">
+                <MailOutlineRounded/> Messages
+                </Link>
+                <Link to="/Reports" className="navbarelement">
+                <AccountBalanceWalletOutlined/> Reports
+                </Link>
+                <Link to="/Settings" className="navbarelement">
+                <SettingsOutlined/> Settings
+                </Link>
+            </div>
+        </div>
     );
-  };
-  
-  export default Navbar;
+};
+
+export default Navbar;

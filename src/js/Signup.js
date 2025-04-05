@@ -1,12 +1,19 @@
 import * as React from "react";
 import "../css/Signup.css";
 import { Link, useNavigate } from "react-router-dom";
+import Swal from 'sweetalert2';
 
 const Signup = () => {
 
 const navigate = useNavigate();
   const handleSignup = () => {
-    navigate('/');
+    Swal.fire({
+      title: 'Register Success',
+      icon: 'success',
+      customClass: {
+        popup: 'swal-popup'
+      }
+    }).then(() => navigate('/'));
   };
 
     return (

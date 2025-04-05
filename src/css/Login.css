@@ -231,3 +231,7 @@ div {
     padding: 10px;
   }
   
+  .swal-popup, .swal2-actions {
+    height: 60%;
+    display: flex;
+  }
