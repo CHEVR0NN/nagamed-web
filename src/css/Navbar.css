@@ -21,13 +21,18 @@
     border-radius: 4px;
     font-size: 18px;
     font-family: 'Poppins', sans-serif;
-    padding-left: 30px;
+    margin-left: 10px;
   }
   
-  /* .navbar a:hover {
-    background-color: #444;
+  .navbar a:hover {
+    border-left: 3px solid #0B63F8;
+    border-radius: 0px;
   }
-   */
+
+  .navbar a:focus {
+    color: #0C31F1;
+  }
+
   .navbarheading {
     font-size: 24px;
     font-weight: 500;
@@ -44,13 +49,15 @@
   }
 
   .routes {
-    padding: 30px;
+    padding: 10px;
     flex-direction: column;
+    margin-top: 10px;
   }
 
   .routes a .material-symbols-rounded {
     margin-right: 10px;
-    font-size: 24px; /* icon size */
+    display: flex;
+    align-items: center;
   }
 
   .navbarelement {

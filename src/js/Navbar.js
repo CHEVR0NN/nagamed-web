@@ -12,25 +12,25 @@ const Navbar = () => {
 
             <div className="routes">
                 <Link to="/Dashboard" className="navbarelement">
-                <GridView/> Dashboard
+                <GridView style={ { marginRight: 10 } }/> Dashboard
                 </Link>
                 <Link to="/Appointments" className="navbarelement">
-                <AssignmentTurnedInOutlined/> Appointments
+                <AssignmentTurnedInOutlined style={ { marginRight: 10 } }/> Appointments
                 </Link>
                 <Link to="/Doctors" className="navbarelement">
-                <FreeCancellationOutlined/> Doctors
+                <FreeCancellationOutlined style={ { marginRight: 10 } }/> Doctors
                 </Link>
                 <Link to="/Patients" className="navbarelement">
-                <MedicalServicesOutlined/> Patients
+                <MedicalServicesOutlined style={ { marginRight: 10 } }/> Patients
                 </Link>
                 <Link to="/Messages" className="navbarelement">
-                <MailOutlineRounded/> Messages
+                <MailOutlineRounded style={ { marginRight: 10 } }/> Messages
                 </Link>
                 <Link to="/Reports" className="navbarelement">
-                <AccountBalanceWalletOutlined/> Reports
+                <AccountBalanceWalletOutlined style={ { marginRight: 10 } }/> Reports
                 </Link>
                 <Link to="/Settings" className="navbarelement">
-                <SettingsOutlined/> Settings
+                <SettingsOutlined style={ { marginRight: 10 } }/> Settings
                 </Link>
             </div>
         </div>
