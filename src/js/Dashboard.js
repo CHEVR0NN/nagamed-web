@@ -1,25 +1,11 @@
 import * as React from "react";
 import "../css/Dashboard.css";
-import { SearchOutlined, NotificationsOutlined, AddCircleOutlineOutlined, Circle } from '@mui/icons-material';
+import { AddCircleOutlineOutlined, Circle, ArrowDropDownOutlined } from '@mui/icons-material';
 import LineChart from './Linechart';
 const Dashboard = () => {
     return (
         <div className="dashboard">
         
-            <div className="part1">
-                <div className="searchbar">
-                    <SearchOutlined style={ { marginLeft: 10 } }/>
-                    <input type="text" placeholder="Search" />
-                </div>
-                
-                <div className="rightpart1">
-                    <div className="notification">
-                        <NotificationsOutlined />
-                    </div>
-                    <div className="userpfp" />
-                </div>
-            </div>
-
             <div className="part2">
                 <div className="hellodoc">
                 {/* pafetch doctor name */}
@@ -52,12 +38,66 @@ const Dashboard = () => {
             </div>
 
             <div className="part4">
+                <span className="part4container1">
+                    <span className="part4titles">
+                        <span className="part4title1">Appointment Requests</span>
+                        <span className="part4title2">View All</span>
+                    </span>
+                    
+                    {/* appointment requests ( name, date, time, status ) */}
+                    <table className="part4table">
+                        <tr>
+                            <td>Row 1, Col 1</td>
+                            <td>Row 1, Col 2</td>
+                            <td>Row 1, Col 3</td>
+                            <td>Row 1, Col 4</td>
+                        </tr>
+                        <tr>
+                            <td>Row 2, Col 1</td>
+                            <td>Row 2, Col 2</td>
+                            <td>Row 2, Col 3</td>
+                            <td>Row 2, Col 4</td>
+                        </tr>
+                        <tr>
+                            <td>Row 3, Col 1</td>
+                            <td>Row 3, Col 2</td>
+                            <td>Row 3, Col 3</td>
+                            <td>Row 3, Col 4</td>
+                        </tr>
+                    </table>
+                </span>
+                
+                <span className="part4container1">
+                    <span className="part4titles">
+                        <span className="part4title1">Appointments</span>
+                        <span className="part4title2">Today <ArrowDropDownOutlined/></span>
+                    </span>
+                    
+                    {/* appointments ( name, status ) */}
+                    <table className="part4table">
+                        <tr>
+                            <td>Row 1, Col 1</td>
+                            <td>Row 1, Col 2</td>
+                        </tr>
+                        <tr>
+                            <td>Row 2, Col 1</td>
+                            <td>Row 2, Col 2</td>
+                        </tr>
+                        <tr>
+                            <td>Row 3, Col 1</td>
+                            <td>Row 3, Col 2</td>
+                        </tr>
+                    </table>
+                </span>
                 
             </div>
+
+
+
+
         </div>
     );
 };
 
   
   export default Dashboard;
-  
