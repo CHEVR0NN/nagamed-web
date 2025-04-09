@@ -2,15 +2,64 @@
     background-color: #F9F8F9;
     font-family: "Poppins";
     padding: 25px;
-    display: grid;
+    display: block;
+    height: 100vh;
 }
 
 .patientstitle {
     font-weight: 500;
     font-size: 24px;
     display: flex;
+    
 }
 
-/* .searchingpatients {
+.searchingpatients {
+    flex-direction: column;
+    justify-content: space-between;
+    width: 85%;
+    gap: 10px;
+}
+
+.patientsearchinginputs {
+    flex-direction: row;
+}
+
+.patientsearchbar {
+    width: 90%;
+    height: 40px;
+    border: 1px solid #13131340;
+    padding-left: 30px;
+    font-weight: 300;
+    font-family: "Poppins";
+    font-size: 15px;
+}
+
+.patientstable {
+    padding: 20px;
+    background-color: #ffffff;
+    font-family: "Poppins";
     width: 100%;
-} */
+    margin-top: 20px;
+}
+
+.patientstable td, th {
+    border-bottom: 1px solid #F2F2F2;
+    padding: 10px;
+}
+
+.patientstable thead {
+    text-align: left;
+}
+
+.patientidcolumn {
+    color: #0B63F8;
+}
+
+.patientstable td:last-child {
+  color: #1170B3;
+  font-weight: 500;
+}
+
+.patientstable tbody {
+    font-weight: 400;
+}

@@ -16,7 +16,7 @@ const Login = () => {
   };
 
   return (
-    <div>
+    <div className="dashboardcont">
 
       <div className="split left">
       <p className="nagamed"><span className="naga">Naga</span>
