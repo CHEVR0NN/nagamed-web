@@ -1,8 +1,9 @@
 .S2-screen {
     background-color: #F9F8F9;
-    padding-left: 25px;
+    padding-left: 40px;
     display: flex;
     flex-direction: column;
+    height: 100vh;
 }
 
 .S2-title {
@@ -64,7 +65,8 @@
     margin-top: 20px;
     overflow: hidden;
     margin-bottom: 20px;
-    max-height: 100%;
+    display: flex;
+    overflow-y: auto
 }
   
 .S2-table1 {
@@ -137,7 +139,7 @@
   
   .S2-bottom-partcontainer1 {
       background-color: #FFFFFF;
-      height: 100%;
+      height: 70%;
       width: 40%;
       box-shadow: hsla(0, 0%, 0%, 0.251) 0px 4px 4px 0px;
       border-radius: 20px;

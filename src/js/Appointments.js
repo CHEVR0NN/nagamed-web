@@ -8,6 +8,7 @@ const Appointments = () => {
     const appointmentsTableData = [
         { patientName: 'Kylie Clemente', contact: '09999999999', medicalHistory: 'adhd', doctorAssigned: 'Dr. Kwak Kwak', dateTime: 'Apr 13, 2025 04:13 AM', actions: ' ' },
         { patientName: 'Faye Webster', contact: '09123456789', medicalHistory: 'manipulator', doctorAssigned: 'Dr. Stone', dateTime: 'Apr 21, 2025 10:23 AM', actions: ' ' },
+
     ]
 
       
@@ -44,8 +45,8 @@ const Appointments = () => {
                             <td>{item.dateTime}</td>
                             <td className="actionbtns">
                             <a className="actionbtn1" href="#">View</a>
-                            <button className="actionbtn2">Approve</button>
-                            <button className="actionbtn3">Decline</button>
+                            <button className="actionbtn2" href="#">Approve</button>
+                            <button className="actionbtn3" href="#">Decline</button>
                             </td>
                             </tr>
                         ))}

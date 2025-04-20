@@ -1,8 +1,8 @@
 .dashboard {
   background-color: #F9F8F9;
-  
   flex-direction: column;
   padding-left: 20px;
+  height: 120vh;
 }
 
 
