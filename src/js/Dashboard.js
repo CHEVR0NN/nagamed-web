@@ -1,7 +1,9 @@
 import * as React from "react";
 import "../css/Dashboard.css";
-import { AddCircleOutlineOutlined, Circle, ArrowDropDownOutlined } from '@mui/icons-material';
-import LineChart from './Linechart';
+import { AddCircleOutlineOutlined, Circle } from '@mui/icons-material';
+import Activitychart from './Activitychart';
+import Dailychart from "./Dailychart";
+import Patientchart from "./Patientchart";
 const Dashboard = () => {
     return (
         <div className="dashboard">
@@ -32,62 +34,47 @@ const Dashboard = () => {
                     <hr className="part3hr"/>
 
                     <div className="part3chart">
-                    <LineChart/>
+                    <Activitychart/>
                     </div>
+
+                    
                 </div>
             </div>
 
             <div className="part4">
-                <span className="part4container1">
-                    <span className="part4titles">
-                        <span className="part4title1">Appointment Requests</span>
-                        <span className="part4title2">View All</span>
-                    </span>
+                <div className="part4container1">
+                    <span className="part4title1">Daily Appointments</span>
                     
-                    {/* appointment requests ( name, date, time, status ) */}
-                    <table className="part4table">
-                        <tr>
-                            <td>Row 1, Col 1</td>
-                            <td>Row 1, Col 2</td>
-                            <td>Row 1, Col 3</td>
-                            <td>Row 1, Col 4</td>
-                        </tr>
-                        <tr>
-                            <td>Row 2, Col 1</td>
-                            <td>Row 2, Col 2</td>
-                            <td>Row 2, Col 3</td>
-                            <td>Row 2, Col 4</td>
-                        </tr>
-                        <tr>
-                            <td>Row 3, Col 1</td>
-                            <td>Row 3, Col 2</td>
-                            <td>Row 3, Col 3</td>
-                            <td>Row 3, Col 4</td>
-                        </tr>
-                    </table>
-                </span>
+                    <span className="part4chart1"> <Dailychart/> </span>
+                   
+                   <span className="part4chart1label">
+                        <span className="legend1"><Circle style = { {fontSize: 14, color: '82C45C' } }/> Approved</span>
+                        <span className="legend1"><Circle style = { {fontSize: 14, color: '28B6F6' } }/> Declined</span>
+                   </span>
+
+                </div>
                 
-                <span className="part4container1">
+                <span className="part4container2">
                     <span className="part4titles">
-                        <span className="part4title1">Appointments</span>
-                        <span className="part4title2">Today <ArrowDropDownOutlined/></span>
+                        <span className="part4title1">Patient Graph</span>
                     </span>
                     
-                    {/* appointments ( name, status ) */}
-                    <table className="part4table">
-                        <tr>
-                            <td>Row 1, Col 1</td>
-                            <td>Row 1, Col 2</td>
-                        </tr>
-                        <tr>
-                            <td>Row 2, Col 1</td>
-                            <td>Row 2, Col 2</td>
-                        </tr>
-                        <tr>
-                            <td>Row 3, Col 1</td>
-                            <td>Row 3, Col 2</td>
-                        </tr>
-                    </table>
+                    <span className="part4chart2">
+                        <Patientchart/>
+                    </span>
+
+                    <span className="part4container2chartlabels">
+                        <span className="chartlegends">
+                            <span className="legend1"><Circle style = { {fontSize: 14, color: 'C084FC' } }/> Patient Count</span>
+                            <span className="legend2"><Circle style = { {fontSize: 14, color: 'FB923C' } }/> Appointment Pending</span>
+                        </span>
+
+                        <span className="chartlegends">
+                            <span className="legend1"><Circle style = { {fontSize: 14, color: '2563EB' } }/> Appointment Decline</span>
+                            <span className="legend2"><Circle style = { {fontSize: 14, color: '22C55E' } }/> Appointment Finished</span>
+                        </span>
+                    </span>
+
                 </span>
                 
             </div>

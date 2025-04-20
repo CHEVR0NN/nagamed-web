@@ -2,19 +2,18 @@
   background-color: #F9F8F9;
   
   flex-direction: column;
-  /* height: 100vh; */
   padding-left: 20px;
 }
 
 
 .part2 {
-  height: 25%;
+  height: 30%;
   padding-left: 20px;
   box-sizing: border-box;
 }
 
 .part3 {
-  height: 42%;
+  height: 50%;
   padding: 20px;
   box-sizing: border-box;
   display: flex;
@@ -22,10 +21,11 @@
 }
 
 .part4 {
-  height: 40%;
+  height: 50%;
   padding: 20px;
   box-sizing: border-box;
   gap: 50px;
+  margin-top: 10px;
 }
 
 
@@ -34,7 +34,7 @@
   background-size: cover;
   background-position: center;
   width: 70%;
-  height: 100%;
+  height: 110%;
   border-radius: 23px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.25);
   font-family: Poppins;
@@ -43,6 +43,7 @@
   flex-direction: column;
   padding-left: 80px;
   padding-top: 55px;
+  margin-bottom: 20px;
 }
 
 .whitetxt {
@@ -104,6 +105,7 @@
   border-radius: 20px;
   padding: 20px;
   flex-direction: column;
+  margin-top: 20px;
 }
 
 .part3title {
@@ -142,14 +144,32 @@
   padding: 20px;
  }
 
+.part4chart1 {
+  height: 70%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.part4chart2 {
+  height: 100%;
+  width: 100%;
+  padding: 20px;
+  margin-top: 20px;
+}
+
  .part4container1 {
     background-color: #FFFFFF;
     height: 100%;
-    width: 40%;
+    width: 30%;
     box-shadow: hsla(0, 0%, 0%, 0.251) 0px 4px 4px 0px;
     border-radius: 20px;
     padding: 40px;
     font-family: "Poppins";
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
  }
 
  .part4titles {
@@ -172,23 +192,23 @@
   display: flex;
 }
 
-/* .part4hr {
-  border: 0;
-  height: 1px;
-  background-color: rgba(0, 0, 0, 0.6);
-  margin: 20px 0;
-} */
-
-.part4table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  font-family: "Poppins";
-  font-weight: 500;
+.part4chart1label {
+  display: flex;
+  flex-direction: column;
 }
 
-.part4table td {
-  padding: 10px;
-  text-align: center;
-  border-top: 0.5px solid #000000;
+.part4container2 {
+  background-color: #FFFFFF;
+  height: 100%;
+  width: 57%;
+  box-shadow: hsla(0, 0%, 0%, 0.251) 0px 4px 4px 0px;
+  border-radius: 20px;
+  padding: 40px;
+  font-family: "Poppins";
+}
+
+.part4container2chartlabels {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }

@@ -40,7 +40,7 @@ const Header = () => {
         .notification, .userpfp {
         background-color: #ffffff;
         width: 6%;
-        height: 5%;
+        height: 90%;
         padding: 10px;
         }
 

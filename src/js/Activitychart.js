@@ -1,4 +1,5 @@
 import { Line } from 'react-chartjs-2';
+
 import {
   Chart as ChartJS,
   LineElement,
@@ -30,16 +31,14 @@ const data = {
       label: 'Patients',
       data: [100, 500, 150, 600, 250, 1000, 500, 150, 700, 250, 900, 50], //sample data lang 
       borderColor: '#962DFF',
-      tension: 0.4,
       pointRadius: 0,
       tension: 0,
 
     },
     {
       label: 'Consultation',
-      data: [50, 500, 75, 200, 180, 800, 200, 850, 10, 1000, 300, 700],
+      data: [50, 500, 75, 200, 180, 800, 200, 850, 10, 1000, 300, 700], //sample data lang 
       borderColor: '#FCB5C3',
-      tension: 0.4,
       pointRadius: 0,
       tension: 0,
     },
@@ -47,28 +46,39 @@ const data = {
 };
 
 const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        ticks: {
-          stepSize: 250,
-          callback: function (value) {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      ticks: {
+        stepSize: 250,
+        callback: function (value) {
           return value.toLocaleString();
-          },
         },
-        beginAtZero: true,
+      },
+      beginAtZero: true,
+      grid: {
+        drawBorder: false,
+        borderDash: [5, 5],
       },
     },
-    plugins: {
-      legend: {
-        display: false,
+    x: {
+      grid: {
+        drawBorder: false,
+        borderDash: [5, 5],
       },
-      title: {
-        display: false,
-        },
-      },
-  };
+    },
+  },
+  plugins: {
+    legend: {
+      display: false,
+    },
+    title: {
+      display: false,
+    },
+  },
+};
+
   
 
 export default function LineChart() {

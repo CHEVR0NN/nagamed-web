@@ -237,4 +237,9 @@ div {
   .swal-popup, .swal2-actions {
     height: 60%;
     display: flex;
+    font-family: "Poppins";
   }
+
+  /* .swal2-success-ring {
+    border-width: 20px;
+  } */
