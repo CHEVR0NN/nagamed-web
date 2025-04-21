@@ -1,0 +1,189 @@
+.message-container {
+    display: flex;
+    gap: 20px;
+    height: 90vh;
+    padding: 10px;
+    padding-left: 40px;
+    background-color: #F9F8F9;
+    font-family: 'Poppins';
+  }
+  
+  .sidebar {
+    width: 20%;
+    display: flex;
+    flex-direction: column;
+    background-image: linear-gradient(to bottom, #ffffff, #F4F4F4);
+    border: none;
+    padding: 10px;
+  }
+  
+  .msg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    width: 100%;
+    height: 7%;
+    
+  }
+
+  .msg-header-txt {
+    flex-direction: row;
+    display: flex;
+    font-weight: 400;
+    font-size: 15px;
+  }
+  
+  .icons {
+    font-size: 18px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+
+  .sidebar-hr {
+    border: 1px solid #EAEAEA;
+  }
+  
+  .person {
+    display: flex;
+    justify-content: space-between;
+    margin: 10px 0;
+    cursor: pointer;
+  }
+  
+  .indicator {
+    width: 20%;
+    height: 100%;
+    border-radius: 10px;
+    display: inline-block;
+    padding: 5px;
+    color: #fff;
+    font-weight: 400;
+    font-size: 12px;
+    text-align: center;
+  }
+  
+  .indicator.doctor {
+    background-color: #2F80ED;
+
+  }
+  
+  .indicator.patient {
+    background-color: #82C45C;
+  }
+  
+  .chat-area {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: #ffffff;
+    box-shadow: hsla(0, 0%, 0%, 0.251) 0px 4px 4px 0px;
+    border-radius: 20px;
+    padding: 30px;
+  }
+  
+  .top-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 12%;
+  }
+  
+  .chat-box {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 10px;
+    height: 100%;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  
+  .left-messages,
+  .right-messages {
+    width: 49%;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .message.left {
+    background-color: #28B6F6;
+    align-self: flex-start;
+    padding: 10px;
+    border-top-left-radius: 13px;
+    border-top-right-radius: 13px;
+    border-bottom-left-radius: 13px;
+  }
+  
+  .message.right {
+    background-color: #82C45C;
+    color: white;
+    align-self: flex-end;
+    width: auto;
+    padding: 10px;
+    border-top-left-radius: 13px;
+    border-top-right-radius: 13px;
+    border-bottom-left-radius: 13px;
+  }
+  
+  .input-bar {
+    display: flex;
+    gap: 10px;
+    height: 5%;
+  }
+  
+  .kausap {
+    font-weight: 500;
+    font-size: 15px;
+  }
+
+  .msg-search {
+    border: solid 1px #00000033;
+    background-color: #FFFFFF;
+    width: 80%;
+    height: 50%;
+    text-indent: 10px;
+  }
+
+  .compose-btn {
+    width: 20%;
+    height: 50%;
+    background-color: #82C45C;
+    border: none;
+    border-radius: 15px;
+    color: #FFFFFF;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .chat-hr {
+    border: none;
+    border-top: 1px solid #292D32;
+    width: 100%;
+    transform: scaleY(0.5);
+    transform-origin: top;
+  }
+
+  .chatmate {
+    font-weight: 500;
+    font-size: 15px;
+    margin-left: 10px;
+    height: 5%;
+    display: flex;
+    align-items: center;
+  }
+
+  .msg-input {
+    background-color: #F2F2F2;
+    width: 100%;
+    height: 100%;
+    border: none;
+    text-indent: 10px;
+  }

@@ -4,9 +4,8 @@ import Signup from './js/Signup';
 import Navbar from './js/Navbar';
 import Dashboard from './js/Dashboard';
 import Appointments from './js/Appointments';
-import Doctors from './js/Doctors';
 import Patients from './js/Patients';
-import Message from './js/Message';
+import Messages from './js/Messages';
 import Reports from './js/Reports';
 import Settings from './js/Settings';
 import Header from './js/Header';
@@ -30,9 +29,8 @@ const App = () => {
             <Route path="/Signup" element={<Signup />} />
             <Route path="/Dashboard" element={<Dashboard />} />
             <Route path="/Appointments" element={<Appointments />} />
-            <Route path="/Doctors" element={<Doctors />} />
             <Route path="/Patients" element={<Patients />} />
-            <Route path="/Message" element={<Message />} />
+            <Route path="/Messages" element={<Messages />} />
             <Route path="/Reports" element={<Reports />} />
             <Route path="/Settings" element={<Settings />} />
           </Routes>

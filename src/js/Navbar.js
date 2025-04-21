@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from 'react-router-dom';
 import "../css/Navbar.css";
-import { GridView, AssignmentTurnedInOutlined, FreeCancellationOutlined, MedicalServicesOutlined, MailOutlineRounded, AccountBalanceWalletOutlined, SettingsOutlined } from '@mui/icons-material';
+import { GridView, AssignmentTurnedInOutlined, MedicalServicesOutlined, MailOutlineRounded, AccountBalanceWalletOutlined, SettingsOutlined } from '@mui/icons-material';
 const Navbar = () => {
     return (
         <div className="navbar">
@@ -16,9 +16,6 @@ const Navbar = () => {
                 </Link>
                 <Link to="/Appointments" className="navbarelement">
                 <AssignmentTurnedInOutlined style={ { marginRight: 10 } }/> Appointments
-                </Link>
-                <Link to="/Doctors" className="navbarelement">
-                <FreeCancellationOutlined style={ { marginRight: 10 } }/> Doctors
                 </Link>
                 <Link to="/Patients" className="navbarelement">
                 <MedicalServicesOutlined style={ { marginRight: 10 } }/> Patients
