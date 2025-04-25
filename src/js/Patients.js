@@ -16,12 +16,14 @@ const Patients = () => {
   useEffect(() => {
     const fetchPatients = async () => {
       try {
-        const response = await axios.get('https://nagamedserver.onrender.com/api/appointment');
+        const response = await axios.get('https://nagamedserver.onrender.com/api/user');
 
         const patientsData = response.data.map((p) => ({
-          ...p,
-          registerDate: p.registerDate, // assume this is plain
           id: p._id || p.id, // fallback in case of `_id`
+          fullName: p.fullname || p.name || "Unknown", // handle `fullname` and `name`
+          email: p.email || "Unknown",
+          contactNo: p.contactNo || "Unknown", // default to "Unknown" if not provided
+          registerDate: p.createdAt || "Unknown", // use `createdAt` as register date
         }));
 
         setPatients(patientsData);
@@ -44,7 +46,6 @@ const Patients = () => {
   const filteredPatients = patients.filter((p) => {
     return (
       p.fullName?.toLowerCase().includes(searchName.toLowerCase()) &&
-      p.id?.toString().includes(searchId) &&
       p.email?.toLowerCase().includes(searchEmail.toLowerCase()) &&
       p.contactNo?.toLowerCase().includes(searchContact.toLowerCase())
     );
@@ -115,8 +116,6 @@ const Patients = () => {
   <thead>
     <tr>
       <th></th>
-      <th>Patient ID</th>
-      <th>Register Date</th>
       <th>Full Name</th>
       <th>Contact No.</th>
       <th>Email Address</th>
@@ -130,8 +129,6 @@ const Patients = () => {
           <td>
             <input type="checkbox" />
           </td>
-          <td className="patientidcolumn">{p.id}</td>
-          <td>{p.registerDate}</td>
           <td>{p.fullName}</td>
           <td>{p.contactNo}</td>
           <td>{p.email}</td>
@@ -142,7 +139,7 @@ const Patients = () => {
       ))
     ) : (
       <tr>
-        <td colSpan="7" style={{ textAlign: "center", padding: "20px" }}>
+        <td colSpan="5" style={{ textAlign: "center", padding: "20px" }}>
           No matching patients found.
         </td>
       </tr>
