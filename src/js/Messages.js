@@ -12,9 +12,20 @@ const dummyPeople = [
   { name: "John Doe", role: "patient", id: "patient" },
 ];
 
+const dummyMessages = [
+  { sender: "patient", text: "Hello, Doctor! I have a question about my medication." },
+  { sender: "doctor", text: "Sure, what would you like to know?" },
+  { sender: "patient", text: "Can I take it with food?" },
+  { sender: "doctor", text: "Yes, you can take it with food to avoid stomach upset." },
+  { sender: "patient", text: "Thank you, Doctor!" },
+  { sender: "doctor", text: "You're welcome! Let me know if you have more questions." },
+];
+
 const Messages = () => {
   const [selected, setSelected] = useState(dummyPeople[0]);
-  const [messages, setMessages] = useState({});
+  const [messages, setMessages] = useState({
+    doctor: dummyMessages,
+  });
   const [input, setInput] = useState("");
 
   useEffect(() => {
@@ -38,7 +49,7 @@ const Messages = () => {
       if (!newMessages[selected.id]) {
         newMessages[selected.id] = [];
       }
-      newMessages[selected.id].push({ sender: "me", text: input });
+      newMessages[selected.id].push({ sender: "doctor", text: input });
       setMessages(newMessages);
       socket.emit("send-message", { receiver: selected.id, text: input });
       setInput("");
@@ -75,16 +86,11 @@ const Messages = () => {
         <hr className="chat-hr" />
 
         <div className="chat-box">
-          <div className="left-messages">
-            {(messages[selected.id] || []).filter(m => m.sender !== "me").map((m, i) => (
-              <div key={i} className="message left">{m.text}</div>
-            ))}
-          </div>
-          <div className="right-messages">
-            {(messages[selected.id] || []).filter(m => m.sender === "me").map((m, i) => (
-              <div key={i} className="message right">{m.text}</div>
-            ))}
-          </div>
+          {messages[selected.id]?.map((m, i) => (
+            <div key={i} className={`message ${m.sender === "doctor" ?  "right" : "left"}`}>
+              {m.text}
+            </div>
+          ))}
         </div>
 
         <div className="input-bar">

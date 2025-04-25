@@ -12,6 +12,17 @@ const Login = () => {
   const navigate = useNavigate(); // For navigation
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      Swal.fire({
+        title: "Please fill in all fields.",
+        icon: "error",
+        customClass: {
+          popup: "swal-popup",
+        },
+      });
+      return;
+    }
+
     try {
       const response = await axios.post(
         "https://nagamedserver.onrender.com/api/auth/signin",
