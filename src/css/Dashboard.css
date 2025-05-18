@@ -79,11 +79,11 @@
   color: #FFFFFF;
   border: none;
   border-radius: 20px;
-  padding-left: 50px;
-  text-align: left;
+  text-align: center;
   display: flex;
   align-items: center;
   gap: 5px;
+  text-indent: 15px;
 }
 
 .dashboardbtn2 {
@@ -156,7 +156,7 @@
   height: 100%;
   width: 100%;
   padding: 20px;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
  .part4container1 {
@@ -200,11 +200,13 @@
 .part4container2 {
   background-color: #FFFFFF;
   height: 100%;
-  width: 57%;
+  width: 56%;
   box-shadow: hsla(0, 0%, 0%, 0.251) 0px 4px 4px 0px;
   border-radius: 20px;
   padding: 40px;
   font-family: "Poppins";
+  display: flex;
+  flex-direction: column;
 }
 
 .part4container2chartlabels {
