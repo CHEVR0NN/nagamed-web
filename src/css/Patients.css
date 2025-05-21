@@ -64,3 +64,12 @@
 .patientstable tbody {
     font-weight: 400;
 }
+
+.editbtn {
+    background-color: #82C45C;
+    border-radius: 13px;
+    color: #FFFFFF;
+    border: none;
+    padding: 9px;
+    font-weight: 500;
+}

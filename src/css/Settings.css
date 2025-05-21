@@ -1,0 +1,75 @@
+/* Settings.css */
+
+.settings-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    background-color: #f9f9f9;
+    min-height: 100vh;
+    font-family: 'Poppins', sans-serif;
+}
+
+.settings-title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.settings-options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    max-width: 400px;
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.settings-item:hover {
+    background-color: #f0f0f0;
+}
+
+.settings-icon {
+    margin-right: 10px;
+    color: #555;
+}
+
+.settings-footer {
+    margin-top: 20px; /* Reduced margin to move the button higher */
+    padding-top: 10px; /* Adjusted padding for better spacing */
+    /*center the button*/
+    display: flex;
+    justify-content: center;
+    
+}
+
+.logout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 20px;
+    background-color: #ff4d4d;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.logout-button:hover {
+    background-color: #e60000;
+}
+
+.logout-icon {
+    margin-right: 5px;
+}

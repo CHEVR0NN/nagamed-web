@@ -3,6 +3,7 @@ import "../css/Reports.css";
 import Dailychart from "./Dailychart";
 import Patientchart from "./Patientchart";
 import { AddCircleOutlineOutlined, Circle } from '@mui/icons-material';
+import CryptoJS from 'crypto-js';
 
 const Reports = () => {
     return (
