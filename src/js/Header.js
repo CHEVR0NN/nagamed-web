@@ -36,11 +36,10 @@ const Header = () => {
         outline: none;
         }
 
-
         .notification, .userpfp {
         background-color: #ffffff;
-        width: 6%;
-        height: 90%;
+        width: 3%;
+        height: 85%;
         padding: 10px;
         }
 
@@ -53,10 +52,10 @@ const Header = () => {
       </style>
 
       <div className="part1">
-        <div className="searchbar">
+        {/* <div className="searchbar">
           <SearchOutlined style={{ marginLeft: 10 }} />
           <input type="text" placeholder="Search" />
-        </div>
+        </div> */}
 
         <div className="rightpart1">
           <div className="notification">

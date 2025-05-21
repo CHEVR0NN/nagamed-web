@@ -66,10 +66,26 @@
 }
 
 .editbtn {
-    background-color: #82C45C;
-    border-radius: 13px;
-    color: #FFFFFF;
+    color: #1170B3;
     border: none;
-    padding: 9px;
     font-weight: 500;
+    text-decoration: underline;
+    background-color: #ffffff;
+    cursor: pointer;
+    font-size: 15px;
+    text-align: center;
+}
+
+.patientsearchdd {
+    width: auto;
+    display: flex;
+    align-items: flex-end;
+    font-family: "Poppins";
+    font-size: 14px;
+    font-weight: 300;
+    text-align: center;
+    align-content: center;
+    margin: auto;
+    padding: 8px;
+    border: 1px solid #13131340;
 }

@@ -81,9 +81,11 @@ const Messages = () => {
           <button className="compose-btn">Compose <NotesOutlined style={{ fontSize: 15, marginLeft: 5 }} /></button>
         </div>
 
-        <hr className="chat-hr" />
-        <span className="chatmate">{selected.name}</span>
-        <hr className="chat-hr" />
+        <div className="chat-header">
+          <hr className="chat-hr" />
+          <span className="chatmate">{selected.name}</span>
+          <hr className="chat-hr" /> 
+        </div>
 
         <div className="chat-box">
           {messages[selected.id]?.map((m, i) => (

@@ -13,6 +13,8 @@ const Patients = () => {
   const [searchEmail, setSearchEmail] = useState("");
   const [searchContact, setSearchContact] = useState("");
 
+  const [selectedOption, setSelectedOption] = useState(null);
+
   useEffect(() => {
     const fetchPatients = async () => {
       try {
@@ -59,6 +61,14 @@ const Patients = () => {
     return <div className="error">{error}</div>;
   }
 
+  const patieninfodropdown = [
+    { label: 'Patient Name', value: 'fullName' },
+    { label: 'Patient ID', value: 'id' },
+    { label: 'Contact Number', value: 'contactNo' },
+    { label: 'Email Address', value: 'email' },
+  ];
+
+
   return (
     <div className="patientscontainer">
       <p className="patientstitle">Patient Information</p>
@@ -66,50 +76,21 @@ const Patients = () => {
 
       {/* Search Fields */}
       <div className="patientsinfoheader">
-        <div className="searchingpatients">
-          <p className="searchtitle">Patient Name</p>
-          <input
-            type="text"
-            className="patientsearchbar"
-            placeholder="Enter Patient Name"
-            value={searchName}
-            onChange={(e) => setSearchName(e.target.value)}
-          />
+        <div className="patientssearchbar">
+          <input type="text" className="patientsearchbar" placeholder="Search Patient Information ..."/>
         </div>
 
-        <div className="searchingpatients">
-          <p className="searchtitle">Patient ID</p>
-          <input
-            type="text"
-            className="patientsearchbar"
-            placeholder="Enter Patient ID"
-            value={searchId}
-            onChange={(e) => setSearchId(e.target.value)}
-          />
-        </div>
+        <select className="patientsearchdd" value={selectedOption} onChange={(e) => setSelectedOption(e.target.value)}>
+          {/* <option value="" disabled></option> */}
+          {patieninfodropdown.map((option) => (
+          <option key={option.value} value={option.value}>
+          {option.label}
+          </option>
+          ))}
+        </select>
+      </div>  
 
-        <div className="searchingpatients">
-          <p className="searchtitle">Email Address</p>
-          <input
-            type="text"
-            className="patientsearchbar"
-            placeholder="Enter Patient Email"
-            value={searchEmail}
-            onChange={(e) => setSearchEmail(e.target.value)}
-          />
-        </div>
-
-        <div className="searchingpatients">
-          <p className="searchtitle">Contact number</p>
-          <input
-            type="text"
-            className="patientsearchbar"
-            placeholder="Enter Patient Number"
-            value={searchContact}
-            onChange={(e) => setSearchContact(e.target.value)}
-          />
-        </div>
-      </div>
+ 
 
       {/* Patient Table */}
       <table className="patientstable">
