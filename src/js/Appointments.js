@@ -1,218 +1,455 @@
-import React, { useState, useEffect } from "react";
+import * as React from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { v4 as uuidv4 } from "uuid";
 import "../css/Appointments.css";
 import {
   AddCircleOutlineOutlined,
   EditNoteOutlined,
   ArrowDropDownOutlined,
+  Close,
 } from "@mui/icons-material";
 import axios from "axios";
+import Swal from "sweetalert2";
+import storage from "./store/authStore";
 
 const Appointments = () => {
+  const navigate = useNavigate();
   const [appointmentsTableData, setAppointmentsTableData] = useState([]);
-  const [doctorsMap, setDoctorsMap] = useState({});
-  const [clinicsMap, setClinicsMap] = useState({});
+  const [appointmentRequests, setAppointmentRequests] = useState([]);
+  const [todayAppointments, setTodayAppointments] = useState([]);
+  const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [clinics, setClinics] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [showPopup, setShowPopup] = useState(false);
+  const [showAddPopup, setShowAddPopup] = useState(false);
+  const [showEditPopup, setShowEditPopup] = useState(false);
   const [formData, setFormData] = useState({
+    appointment_id: "",
+    patient_id: "",
     doctor_id: "",
     clinic_id: "",
     appointment_date_time: "",
   });
-  const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState("");
-  const [editPopupVisible, setEditPopupVisible] = useState(false);
-  const [editFormData, setEditFormData] = useState({
-    doctor_id: "",
-    clinic_id: "",
-    appointment_date_time: "",
-    status: "",
-  });
-  const [viewPopupVisible, setViewPopupVisible] = useState(false);
-  const [viewData, setViewData] = useState(null);
+  const [editFormData, setEditFormData] = useState(null);
 
   useEffect(() => {
-    const fetchAllData = async () => {
+    const fetchData = async () => {
       try {
-        const [appointmentsRes, doctorsRes, clinicsRes, patientsRes] = await Promise.all([
-          axios.get("https://nagamedserver.onrender.com/api/appointment"),
-          axios.get("https://nagamedserver.onrender.com/api/doctor"),
-          axios.get("https://nagamedserver.onrender.com/api/clinic"),
-          axios.get("https://nagamedserver.onrender.com/api/user"),
+        const authData = storage.load("auth");
+        console.log("Auth data from storage:", authData);
+        if (!authData || !authData.doctorId) {
+          navigate("/");
+          return;
+        }
+
+        const { doctorId, token } = authData;
+        const headers = { "Content-Type": "application/json" };
+        if (token) headers.Authorization = `Bearer ${token}`;
+
+        // Fetch all appointments, patients, doctors, and clinics
+        const [appointmentsRes, patientsRes, doctorsRes, clinicsRes] = await Promise.all([
+          axios.get("https://nagamedserver.onrender.com/api/appointment", { headers }), // Fetch all appointments
+          axios.get("https://nagamedserver.onrender.com/api/user", { headers }),
+          axios.get("https://nagamedserver.onrender.com/api/doctorauth/", { headers }),
+          axios.get("https://nagamedserver.onrender.com/api/clinic", { headers }),
         ]);
 
-        const doctors = doctorsRes.data;
-        const clinics = clinicsRes.data;
-        const patients = patientsRes.data;
+        console.log("Appointments response:", appointmentsRes.data);
+        console.log("Doctors response:", doctorsRes.data);
 
-        const doctorsById = {};
-        doctors.forEach((doc) => {
-          doctorsById[doc._id] = doc;
-        });
+        // Filter appointments by doctorId
+        const appointments = Array.isArray(appointmentsRes.data)
+          ? appointmentsRes.data.filter((appt) => appt.doctor_id === doctorId)
+          : [];
 
-        const clinicsById = {};
-        clinics.forEach((clinic) => {
-          clinicsById[clinic._id] = clinic;
-        });
+        setPatients(patientsRes.data);
+        setDoctors(doctorsRes.data);
+        setClinics(clinicsRes.data);
 
-        const patientsById = {};
-        patients.forEach((patient) => {
-          patientsById[patient._id] = patient;
-        });
+        // Main appointments table
+        const mainTableData = appointments.map((appt) => ({
+          patientName: appt.patient?.name || "Unknown",
+          contact: appt.patient?.contact || "N/A",
+          medicalHistory: appt.patient?.medicalHistory || "None",
+          doctorAssigned: appt.doctor?.fullname || 
+            (doctors.find((d) => d._id === appt.doctor_id)?.fullname || "Unknown"),
+          dateTime: new Date(appt.appointment_date_time).toLocaleString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+            hour: "numeric",
+            minute: "numeric",
+            hour12: true,
+          }),
+          appointment_id: appt.appointment_id,
+          status: appt.status || "Pending",
+          patient_id: appt.patient_id,
+          doctor_id: appt.doctor_id,
+          clinic_id: appt.clinic_id,
+        }));
 
-        const mergedAppointments = appointmentsRes.data.map((appt) => {
-          return {
-            ...appt,
-            doctor: doctorsById[appt.doctor_id] || null,
-            clinic: clinicsById[appt.clinic_id] || null,
-            patient: patientsById[appt.patient_id] || null,
-          };
-        });
+        // Appointment requests (Pending status)
+        const requestsData = appointments
+          .filter((appt) => appt.status === "Pending")
+          .map((appt) => ({
+            name: appt.patient?.name || "Unknown",
+            date: new Date(appt.appointment_date_time).toLocaleDateString(),
+            time: new Date(appt.appointment_date_time).toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "numeric",
+              hour12: true,
+            }),
+            status: appt.status || "Pending",
+            appointment_id: appt.appointment_id,
+          }));
 
-        setDoctorsMap(doctorsById);
-        setClinicsMap(clinicsById);
-        setAppointmentsTableData(mergedAppointments);
+        // Today's appointments
+        const today = new Date().toDateString();
+        const todayData = appointments
+          .filter(
+            (appt) => new Date(appt.appointment_date_time).toDateString() === today
+          )
+          .map((appt) => ({
+            name: appt.patient?.name || "Unknown",
+            status: appt.status || "Pending",
+            appointment_id: appt.appointment_id,
+          }));
+
+        setAppointmentsTableData(mainTableData);
+        setAppointmentRequests(requestsData);
+        setTodayAppointments(todayData);
       } catch (err) {
-        console.error("Error fetching data:", err);
-        setError("Failed to fetch appointment, doctor, clinic, or patient data.");
+        console.error("Error fetching data:", err.response?.data || err.message);
+        setError(err.response?.data?.message || "Failed to fetch data.");
+        Swal.fire({
+          title: "Error",
+          text: err.response?.data?.message || "Failed to fetch data.",
+          icon: "error",
+          customClass: { popup: "swal-popup" },
+        });
       } finally {
         setLoading(false);
       }
     };
 
-    fetchAllData();
-  }, []);
+    fetchData();
+  }, [navigate]);
 
-  const openPopup = () => {
-    setFormData({
-      doctor_id: "",
-      clinic_id: "",
-      appointment_date_time: "",
-    });
-    setSubmitError("");
-    setShowPopup(true);
-  };
-
-  const closePopup = () => {
-    setShowPopup(false);
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e) => {
+  const handleAddSubmit = async (e) => {
     e.preventDefault();
-    setSubmitError("");
-
-    if (!formData.doctor_id || !formData.clinic_id || !formData.appointment_date_time) {
-      setSubmitError("Please fill in all fields.");
+    if (
+      !formData.patient_id ||
+      !formData.doctor_id ||
+      !formData.clinic_id ||
+      !formData.appointment_date_time
+    ) {
+      Swal.fire({
+        title: "Error",
+        text: "Please fill in all fields.",
+        icon: "error",
+        customClass: { popup: "swal-popup" },
+      });
       return;
     }
 
-    setSubmitting(true);
     try {
+      const authData = storage.load("auth");
+      const headers = { "Content-Type": "application/json" };
+      if (authData?.token) headers.Authorization = `Bearer ${authData.token}`;
+
+      const newAppointmentData = {
+        ...formData,
+        appointment_id: formData.appointment_id || uuidv4(),
+      };
+
       const response = await axios.post(
         "https://nagamedserver.onrender.com/api/appointment",
-        formData
+        newAppointmentData,
+        { headers }
       );
-      // Refresh appointments list after successful creation
+
       const newAppointment = response.data;
-      setAppointmentsTableData((prev) => [
-        ...prev,
-        {
-          ...newAppointment,
-          doctor: doctorsMap[newAppointment.doctor_id] || null,
-          clinic: clinicsMap[newAppointment.clinic_id] || null,
-        },
-      ]);
-      setShowPopup(false);
+      const newTableData = {
+        patientName: patients.find((p) => p._id === newAppointment.patient_id)?.name || "Unknown",
+        contact: patients.find((p) => p._id === newAppointment.patient_id)?.contact || "N/A",
+        medicalHistory:
+          patients.find((p) => p._id === newAppointment.patient_id)?.medicalHistory || "None",
+        doctorAssigned:
+          doctors.find((d) => d._id === newAppointment.doctor_id)?.fullname || "Unknown",
+        dateTime: new Date(newAppointment.appointment_date_time).toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        }),
+        appointment_id: newAppointment.appointment_id,
+        status: newAppointment.status || "Pending",
+        patient_id: newAppointment.patient_id,
+        doctor_id: newAppointment.doctor_id,
+        clinic_id: newAppointment.clinic_id,
+      };
+
+      setAppointmentsTableData((prev) => [...prev, newTableData]);
+      if (newAppointment.status === "Pending") {
+        setAppointmentRequests((prev) => [
+          ...prev,
+          {
+            name: newTableData.patientName,
+            date: new Date(newAppointment.appointment_date_time).toLocaleDateString(),
+            time: new Date(newAppointment.appointment_date_time).toLocaleTimeString([], {
+              hour: "numeric",
+              minute: "numeric",
+              hour12: true,
+            }),
+            status: newAppointment.status || "Pending",
+            appointment_id: newAppointment.appointment_id,
+          },
+        ]);
+      }
+      if (
+        new Date(newAppointment.appointment_date_time).toDateString() === new Date().toDateString()
+      ) {
+        setTodayAppointments((prev) => [
+          ...prev,
+          {
+            name: newTableData.patientName,
+            status: newAppointment.status || "Pending",
+            appointment_id: newAppointment.appointment_id,
+          },
+        ]);
+      }
+
+      setShowAddPopup(false);
+      setFormData({
+        appointment_id: "",
+        patient_id: "",
+        doctor_id: "",
+        clinic_id: "",
+        appointment_date_time: "",
+      });
+
+      Swal.fire({
+        title: "Success",
+        text: "Appointment created successfully.",
+        icon: "success",
+        customClass: { popup: "swal-popup" },
+      });
     } catch (error) {
-      // Handle full error response
-      const errorMessage = error.response?.data?.message || "Something went wrong.";
-      setSubmitError(errorMessage);
+      Swal.fire({
+        title: "Error",
+        text: error.response?.data?.message || "Failed to create appointment.",
+        icon: "error",
+        customClass: { popup: "swal-popup" },
+      });
+    }
+  };
 
-      console.error("Error creating appointment:", error);
-      setSubmitError("Failed to create appointment. Please try again.");
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    if (
+      !editFormData.patient_id ||
+      !editFormData.doctor_id ||
+      !editFormData.clinic_id ||
+      !editFormData.appointment_date_time
+    ) {
+      Swal.fire({
+        title: "Error",
+        text: "Please fill in all fields.",
+        icon: "error",
+        customClass: { popup: "swal-popup" },
+      });
+      return;
+    }
 
-    } finally {
-      setSubmitting(false);
+    try {
+      const authData = storage.load("auth");
+      const headers = { "Content-Type": "application/json" };
+      if (authData?.token) headers.Authorization = `Bearer ${authData.token}`;
+
+      const response = await axios.put(
+        `https://nagamedserver.onrender.com/api/appointment/${editFormData.appointment_id}`,
+        editFormData,
+        { headers }
+      );
+
+      const updatedAppointment = response.data;
+      const updatedTableData = {
+        patientName: patients.find((p) => p._id === updatedAppointment.patient_id)?.name || "Unknown",
+        contact: patients.find((p) => p._id === updatedAppointment.patient_id)?.contact || "N/A",
+        medicalHistory:
+          patients.find((p) => p._id === updatedAppointment.patient_id)?.medicalHistory || "None",
+        doctorAssigned:
+          doctors.find((d) => d._id === updatedAppointment.doctor_id)?.fullname || "Unknown",
+        dateTime: new Date(updatedAppointment.appointment_date_time).toLocaleString("en-US", {
+          month: "short",
+          day: "numeric",
+          year: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: true,
+        }),
+        appointment_id: updatedAppointment.appointment_id,
+        status: updatedAppointment.status || "Pending",
+        patient_id: updatedAppointment.patient_id,
+        doctor_id: updatedAppointment.doctor_id,
+        clinic_id: updatedAppointment.clinic_id,
+      };
+
+      setAppointmentsTableData((prev) =>
+        prev.map((appt) => (appt.appointment_id === updatedAppointment.appointment_id ? updatedTableData : appt))
+      );
+      setAppointmentRequests((prev) =>
+        updatedAppointment.status === "Pending"
+          ? prev.map((req) =>
+              req.appointment_id === updatedAppointment.appointment_id
+                ? {
+                    name: updatedTableData.patientName,
+                    date: new Date(updatedAppointment.appointment_date_time).toLocaleDateString(),
+                    time: new Date(updatedAppointment.appointment_date_time).toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "numeric",
+                      hour12: true,
+                    }),
+                    status: updatedAppointment.status || "Pending",
+                    appointment_id: updatedAppointment.appointment_id,
+                  }
+                : req
+            )
+          : prev.filter((req) => req.appointment_id !== updatedAppointment.appointment_id)
+      );
+      setTodayAppointments((prev) =>
+        new Date(updatedAppointment.appointment_date_time).toDateString() === new Date().toDateString()
+          ? prev.map((appt) =>
+              appt.appointment_id === updatedAppointment.appointment_id
+                ? {
+                    name: updatedTableData.patientName,
+                    status: updatedAppointment.status || "Pending",
+                    appointment_id: updatedAppointment.appointment_id,
+                  }
+                : appt
+            )
+          : prev.filter((appt) => appt.appointment_id !== updatedAppointment.appointment_id)
+      );
+
+      setShowEditPopup(false);
+      setEditFormData(null);
+
+      Swal.fire({
+        title: "Success",
+        text: "Appointment updated successfully.",
+        icon: "success",
+        customClass: { popup: "swal-popup" },
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: error.response?.data?.message || "Failed to update appointment.",
+        icon: "error",
+        customClass: { popup: "swal-popup" },
+      });
+    }
+  };
+
+  const handleApprove = async (appointmentId) => {
+    try {
+      const authData = storage.load("auth");
+      const headers = { "Content-Type": "application/json" };
+      if (authData?.token) headers.Authorization = `Bearer ${authData.token}`;
+
+      await axios.put(
+        `https://nagamedserver.onrender.com/api/appointment/${appointmentId}`,
+        { status: "Approved" },
+        { headers }
+      );
+
+      setAppointmentsTableData((prev) =>
+        prev.map((appt) =>
+          appt.appointment_id === appointmentId ? { ...appt, status: "Approved" } : appt
+        )
+      );
+      setAppointmentRequests((prev) =>
+        prev.filter((req) => req.appointment_id !== appointmentId)
+      );
+      setTodayAppointments((prev) =>
+        prev.map((appt) =>
+          appt.appointment_id === appointmentId ? { ...appt, status: "Approved" } : appt
+        )
+      );
+
+      Swal.fire({
+        title: "Success",
+        text: "Appointment approved.",
+        icon: "success",
+        customClass: { popup: "swal-popup" },
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: error.response?.data?.message || "Failed to approve appointment.",
+        icon: "error",
+        customClass: { popup: "swal-popup" },
+      });
+    }
+  };
+
+  const handleDecline = async (appointmentId) => {
+    try {
+      const authData = storage.load("auth");
+      const headers = { "Content-Type": "application/json" };
+      if (authData?.token) headers.Authorization = `Bearer ${authData.token}`;
+
+      await axios.put(
+        `https://nagamedserver.onrender.com/api/appointment/${appointmentId}`,
+        { status: "Declined" },
+        { headers }
+      );
+
+      setAppointmentsTableData((prev) =>
+        prev.map((appt) =>
+          appt.appointment_id === appointmentId ? { ...appt, status: "Declined" } : appt
+        )
+      );
+      setAppointmentRequests((prev) =>
+        prev.filter((req) => req.appointment_id !== appointmentId)
+      );
+      setTodayAppointments((prev) =>
+        prev.map((appt) =>
+          appt.appointment_id === appointmentId ? { ...appt, status: "Declined" } : appt
+        )
+      );
+
+      Swal.fire({
+        title: "Success",
+        text: "Appointment declined.",
+        icon: "success",
+        customClass: { popup: "swal-popup" },
+      });
+    } catch (error) {
+      Swal.fire({
+        title: "Error",
+        text: error.response?.data?.message || "Failed to decline appointment.",
+        icon: "error",
+        customClass: { popup: "swal-popup" },
+      });
     }
   };
 
   const openEditPopup = (appointment) => {
     setEditFormData({
+      appointment_id: appointment.appointment_id,
+      patient_id: appointment.patient_id || "",
       doctor_id: appointment.doctor_id || "",
       clinic_id: appointment.clinic_id || "",
-      appointment_date_time: appointment.appointment_date_time || "",
-      status: appointment.status || "",
+      appointment_date_time: new Date(appointment.appointment_date_time)
+        .toISOString()
+        .slice(0, 16),
+      status: appointment.status || "Pending",
     });
-    setEditPopupVisible(true);
-  };
-
-  const closeEditPopup = () => {
-    setEditPopupVisible(false);
-  };
-
-  const handleEditInputChange = (e) => {
-    const { name, value } = e.target;
-    setEditFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
-    setSubmitError("");
-
-    if (!editFormData.doctor_id || !editFormData.clinic_id || !editFormData.appointment_date_time) {
-      setSubmitError("Please fill in all fields.");
-      return;
-    }
-
-    setSubmitting(true);
-    try {
-      const response = await axios.put(
-        `https://nagamedserver.onrender.com/api/appointment/${editFormData.id}`,
-        editFormData
-      );
-      const updatedAppointment = response.data;
-      setAppointmentsTableData((prev) =>
-        prev.map((appt) =>
-          appt._id === updatedAppointment._id
-            ? {
-                ...updatedAppointment,
-                doctor: doctorsMap[updatedAppointment.doctor_id] || null,
-                clinic: clinicsMap[updatedAppointment.clinic_id] || null,
-              }
-            : appt
-        )
-      );
-      setEditPopupVisible(false);
-    } catch (error) {
-      const errorMessage = error.response?.data?.message || "Something went wrong.";
-      setSubmitError(errorMessage);
-
-      console.error("Error updating appointment:", error);
-      setSubmitError("Failed to update appointment. Please try again.");
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  const openViewPopup = (appointment) => {
-    setViewData(appointment);
-    setViewPopupVisible(true);
-  };
-
-  const closeViewPopup = () => {
-    setViewPopupVisible(false);
-    setViewData(null);
+    setShowEditPopup(true);
   };
 
   return (
@@ -220,173 +457,230 @@ const Appointments = () => {
       <div className="S2-title">
         <span className="S2-title-main">Appointments</span>
         <div className="S2-title-btns">
-          <button className="S2-title-btn1" onClick={openPopup}>
+          <button
+            className="S2-title-btn1"
+            onClick={() => setShowAddPopup(true)}
+          >
             Add Appointment <AddCircleOutlineOutlined style={{ fontSize: 15 }} />
           </button>
           <button
             className="S2-title-btn2"
-            onClick={() => setEditPopupVisible(true)}
+            onClick={() =>
+              Swal.fire({
+                title: "Select Appointment",
+                text: "Please select an appointment to edit by clicking 'View'.",
+                icon: "info",
+                customClass: { popup: "swal-popup" },
+              })
+            }
           >
             Edit Appointment <EditNoteOutlined style={{ fontSize: 18 }} />
           </button>
         </div>
       </div>
 
-      {loading ? (
-        <p>Loading appointments...</p>
-      ) : error ? (
-        <p className="error">{error}</p>
-      ) : appointmentsTableData.length === 0 ? (
-        <p>No appointments found.</p>
-      ) : (
-        <>
-          <div className="S2-table">
-            <table className="S2-table1">
-              <thead className="S2-table1-header">
+      <div className="S2-table">
+        {loading && <div>Loading...</div>}
+        {error && <div>Error: {error}</div>}
+        {!loading && !error && appointmentsTableData.length === 0 && (
+          <div>No appointments found for this doctor.</div>
+        )}
+        {!loading && !error && appointmentsTableData.length > 0 && (
+          <table className="S2-table1">
+            <thead className="S2-table1-header">
+              <tr>
+                <th>Patient Name</th>
+                <th>Contact</th>
+                <th>Medical History</th>
+                <th>Doctor Assigned</th>
+                <th>Date & Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {appointmentsTableData.map((item) => (
+                <tr key={item.appointment_id}>
+                  <td>{item.patientName}</td>
+                  <td>{item.contact}</td>
+                  <td>{item.medicalHistory}</td>
+                  <td>{item.doctorAssigned}</td>
+                  <td>{item.dateTime}</td>
+                  <td className="actionbtns">
+                    <a
+                      className="actionbtn1"
+                      href="#"
+                      onClick={() => openEditPopup(item)}
+                    >
+                      View
+                    </a>
+                    <button
+                      className="actionbtn2"
+                      onClick={() => handleApprove(item.appointment_id)}
+                      disabled={item.status !== "Pending"}
+                    >
+                      Approve
+                    </button>
+                    <button
+                      className="actionbtn3"
+                      onClick={() => handleDecline(item.appointment_id)}
+                      disabled={item.status !== "Pending"}
+                    >
+                      Decline
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      <div className="S2-bottom-part">
+        <span className="S2-bottom-partcontainer1">
+          <span className="S2-bottom-parttitles">
+            <span className="S2-bottom-parttitle1">Appointment Requests</span>
+            <span className="S2-bottom-parttitle2">View All</span>
+          </span>
+          {!loading && !error && appointmentRequests.length === 0 && (
+            <div>No appointment requests found.</div>
+          )}
+          {!loading && !error && appointmentRequests.length > 0 && (
+            <table className="S2-bottom-parttable">
+              <thead>
                 <tr>
-                  <th>Patient Name</th>
-                  <th>Doctor Name</th>
-                  <th>Clinic Name</th>
-                  <th>Date & Time</th>
+                  <th>Name</th>
+                  <th>Date</th>
+                  <th>Time</th>
                   <th>Status</th>
-                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {appointmentsTableData.map((item) => (
-                  <tr key={item._id}>
-                    <td>{item.patient?.fullname || "Unknown Patient"}</td>
-                    <td>{item.doctor?.doctor_name || "Unknown Doctor"}</td>
-                    <td>{item.clinic?.clinic_name || "Unknown Clinic"}</td>
-                    <td>{new Date(item.appointment_date_time).toLocaleString()}</td>
-                    <td>{item.status}</td>
-                    <td className="actionbtns">
-                      <button
-                        className="actionbtn1"
-                        onClick={() => openViewPopup(item)}
-                      >
-                        View
-                      </button>
-                      <button className="actionbtn2">Approve</button>
-                      <button className="actionbtn3">Decline</button>
-                    </td>
+                {appointmentRequests.map((req) => (
+                  <tr key={req.appointment_id}>
+                    <td>{req.name}</td>
+                    <td>{req.date}</td>
+                    <td>{req.time}</td>
+                    <td>{req.status}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          )}
+        </span>
 
-          <div className="S2-bottom-part">
-            <span className="S2-bottom-partcontainer1">
-              <span className="S2-bottom-parttitles">
-                <span className="S2-bottom-parttitle1">Appointment Requests</span>
-                <span className="S2-bottom-parttitle2">View All</span>
-              </span>
-
-              <table className="S2-bottom-parttable">
-                <thead>
-                  <tr>
-                    <th>Patient Name</th>
-                    <th>Date</th>
-                    <th>Time</th>
-                    <th>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {appointmentsTableData.map((item) => (
-                    <tr key={item._id}>
-                      <td>{item.patient?.fullname || "Unknown Patient"}</td>
-                      <td>{new Date(item.appointment_date_time).toLocaleDateString()}</td>
-                      <td>{new Date(item.appointment_date_time).toLocaleTimeString()}</td>
-                      <td>{item.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        <span className="S2-bottom-partcontainer1">
+          <span className="S2-bottom-parttitles">
+            <span className="S2-bottom-parttitle1">Appointments</span>
+            <span className="S2-bottom-parttitle2">
+              Today <ArrowDropDownOutlined />
             </span>
-
-            <span className="S2-bottom-partcontainer1">
-              <span className="S2-bottom-parttitles">
-                <span className="S2-bottom-parttitle1">Appointments</span>
-                <span className="S2-bottom-parttitle2">
-                  Today <ArrowDropDownOutlined />
-                </span>
-              </span>
-
-              <table className="S2-bottom-parttable">
-                <thead>
-                  <tr>
-                    <th>Patient Name</th>
-                    <th>Status</th>
+          </span>
+          {!loading && !error && todayAppointments.length === 0 && (
+            <div>No appointments today.</div>
+          )}
+          {!loading && !error && todayAppointments.length > 0 && (
+            <table className="S2-bottom-parttable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {todayAppointments.map((appt) => (
+                  <tr key={appt.appointment_id}>
+                    <td>{appt.name}</td>
+                    <td>{appt.status}</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {appointmentsTableData.map((item) => (
-                    <tr key={item._id}>
-                      <td>{item.patient?.fullname || "Unknown Patient"}</td>
-                      <td>{item.status}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </span>
-          </div>
-        </>
-      )}
+                ))}
+              </tbody>
+            </table>
+          )}
+        </span>
+      </div>
 
-      {showPopup && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h2>Create Appointment</h2>
-            <form onSubmit={handleSubmit}>
-              <label>
-                Doctor:
-                <select
-                  name="doctor_id"
-                  value={formData.doctor_id}
-                  onChange={handleInputChange}
-                  required
+      {/* Add Appointment Popup */}
+      {showAddPopup && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <Close
+                className="modal-close"
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowAddPopup(false)}
+              />
+              <h2>Add Appointment</h2>
+            </div>
+            <form onSubmit={handleAddSubmit}>
+              <div className="modal-body">
+                <label>
+                  Patient:
+                  <select
+                    value={formData.patient_id}
+                    onChange={(e) =>
+                      setFormData({ ...formData, patient_id: e.target.value })
+                    }
+                  >
+                    <option value="">Select Patient</option>
+                    {patients.map((patient) => (
+                      <option key={patient._id} value={patient._id}>
+                        {patient.name || "Unknown"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Doctor:
+                  <select
+                    value={formData.doctor_id}
+                    onChange={(e) =>
+                      setFormData({ ...formData, doctor_id: e.target.value })
+                    }
+                  >
+                    <option value="">Select Doctor</option>
+                    {doctors.map((doctor) => (
+                      <option key={doctor._id} value={doctor._id}>
+                        {doctor.fullname || "Unknown"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Clinic:
+                  <select
+                    value={formData.clinic_id}
+                    onChange={(e) =>
+                      setFormData({ ...formData, clinic_id: e.target.value })
+                    }
+                  >
+                    <option value="">Select Clinic</option>
+                    {clinics.map((clinic) => (
+                      <option key={clinic._id} value={clinic._id}>
+                        {clinic.name || "Unknown"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Date & Time:
+                  <input
+                    type="datetime-local"
+                    value={formData.appointment_date_time}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        appointment_date_time: e.target.value,
+                      })
+                    }
+                  />
+                </label>
+              </div>
+              <div className="modal-footer">
+                <button type="submit">Save</button>
+                <button
+                  type="button"
+                  onClick={() => setShowAddPopup(false)}
                 >
-                  <option value="">Select a doctor</option>
-                  {Object.values(doctorsMap).map((doc) => (
-                    <option key={doc._id} value={doc._id}>
-                      {doc.doctor_name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Clinic:
-                <select
-                  name="clinic_id"
-                  value={formData.clinic_id}
-                  onChange={handleInputChange}
-                  required
-                >
-                  <option value="">Select a clinic</option>
-                  {Object.values(clinicsMap).map((clinic) => (
-                    <option key={clinic._id} value={clinic._id}>
-                      {clinic.clinic_name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Appointment Date & Time:
-                <input
-                  type="datetime-local"
-                  name="appointment_date_time"
-                  value={formData.appointment_date_time}
-                  onChange={handleInputChange}
-                  required
-                />
-              </label>
-              {submitError && <p className="error">{submitError}</p>}
-              <div className="popup-buttons">
-                <button type="submit" disabled={submitting}>
-                  {submitting ? "Submitting..." : "Create"}
-                </button>
-                <button type="button" onClick={closePopup} disabled={submitting}>
                   Cancel
                 </button>
               </div>
@@ -395,66 +689,88 @@ const Appointments = () => {
         </div>
       )}
 
-      {editPopupVisible && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h2>Edit Appointment</h2>
+      {/* Edit Appointment Popup */}
+      {showEditPopup && editFormData && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-header">
+              <Close
+                className="modal-close"
+                style={{ cursor: "pointer" }}
+                onClick={() => setShowEditPopup(false)}
+              />
+              <h2>Edit Appointment</h2>
+            </div>
             <form onSubmit={handleEditSubmit}>
-              <label>
-                Doctor:
-                <select
-                  name="doctor_id"
-                  value={editFormData.doctor_id}
-                  onChange={handleEditInputChange}
-                  required
+              <div className="modal-body">
+                <label>
+                  Patient:
+                  <select
+                    value={editFormData.patient_id}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, patient_id: e.target.value })
+                    }
+                  >
+                    <option value="">Select Patient</option>
+                    {patients.map((patient) => (
+                      <option key={patient._id} value={patient._id}>
+                        {patient.name || "Unknown"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Doctor:
+                  <select
+                    value={editFormData.doctor_id}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, doctor_id: e.target.value })
+                    }
+                  >
+                    <option value="">Select Doctor</option>
+                    {doctors.map((doctor) => (
+                      <option key={doctor._id} value={doctor._id}>
+                        {doctor.fullname || "Unknown"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Clinic:
+                  <select
+                    value={editFormData.clinic_id}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, clinic_id: e.target.value })
+                    }
+                  >
+                    <option value="">Select Clinic</option>
+                    {clinics.map((clinic) => (
+                      <option key={clinic._id} value={clinic._id}>
+                        {clinic.name || "Unknown"}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Date & Time:
+                  <input
+                    type="datetime-local"
+                    value={editFormData.appointment_date_time}
+                    onChange={(e) =>
+                      setEditFormData({
+                        ...editFormData,
+                        appointment_date_time: e.target.value,
+                      })
+                    }
+                  />
+                </label>
+              </div>
+              <div className="modal-footer">
+                <button type="submit">Save</button>
+                <button
+                  type="button"
+                  onClick={() => setShowEditPopup(false)}
                 >
-                  <option value="">Select a doctor</option>
-                  {Object.values(doctorsMap).map((doc) => (
-                    <option key={doc._id} value={doc._id}>
-                      {doc.doctor_name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Clinic:
-                <select
-                  name="clinic_id"
-                  value={editFormData.clinic_id}
-                  onChange={handleEditInputChange}
-                  required
-                >
-                  <option value="">Select a clinic</option>
-                  {Object.values(clinicsMap).map((clinic) => (
-                    <option key={clinic._id} value={clinic._id}>
-                      {clinic.clinic_name}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                Appointment Date & Time:
-                <input
-                  type="datetime-local"
-                  name="appointment_date_time"
-                  value={editFormData.appointment_date_time}
-                  onChange={handleEditInputChange}
-                  required
-                />
-              </label>
-              <label>
-                Status:
-                <input
-                  type="text"
-                  name="status"
-                  value={editFormData.status}
-                  onChange={handleEditInputChange}
-                  required
-                />
-              </label>
-              <div className="popup-buttons">
-                <button type="submit">Save Changes</button>
-                <button type="button" onClick={closeEditPopup}>
                   Cancel
                 </button>
               </div>
@@ -463,60 +779,88 @@ const Appointments = () => {
         </div>
       )}
 
-      {viewPopupVisible && viewData && (
-        <div className="popup-overlay">
-          <div className="popup-content">
-            <h2>Appointment Details</h2>
-            <form>
-              <label>
-                Patient Name:
-                <input
-                  type="text"
-                  value={viewData.patient?.fullname || "Unknown"}
-                  readOnly
-                />
-              </label>
-              <label>
-                Doctor Name:
-                <input
-                  type="text"
-                  value={viewData.doctor?.doctor_name || "Unknown"}
-                  readOnly
-                />
-              </label>
-              <label>
-                Clinic Name:
-                <input
-                  type="text"
-                  value={viewData.clinic?.clinic_name || "Unknown"}
-                  readOnly
-                />
-              </label>
-              <label>
-                Date & Time:
-                <input
-                  type="text"
-                  value={new Date(viewData.appointment_date_time).toLocaleString()}
-                  readOnly
-                />
-              </label>
-              <label>
-                Status:
-                <input
-                  type="text"
-                  value={viewData.status}
-                  readOnly
-                />
-              </label>
-              <div className="popup-buttons">
-                <button type="button" onClick={closeViewPopup}>
-                  Close
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <style jsx>{`
+        .modal-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.5);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+        .modal-content {
+          background: white;
+          padding: 20px;
+          border-radius: 8px;
+          width: 400px;
+          max-width: 90%;
+          max-height: 600px;
+          overflow-y: auto;
+          position: relative;
+        }
+        .modal-header {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-bottom: 20px;
+          position: relative;
+        }
+        .modal-header h2 {
+          margin: 10px 0 0 0;
+          font-size: 1.5rem;
+          text-align: center;
+        }
+        .modal-close {
+          position: absolute;
+          top: 10px;
+          left: 10px;
+          font-size: 24px;
+          cursor: pointer;
+          color: #333;
+        }
+        .modal-body {
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+        }
+        .modal-body label {
+          display: flex;
+          flex-direction: column;
+          font-size: 0.9rem;
+        }
+        .modal-body select,
+        .modal-body input {
+          margin-top: 5px;
+          padding: 8px;
+          border: 1px solid #ccc;
+          border-radius: 4px;
+          font-size: 1rem;
+        }
+        .modal-footer {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-top: 20px;
+        }
+        .modal-footer button {
+          padding: 8px 16px;
+          border: none;
+          border-radius: 4px;
+          cursor: pointer;
+        }
+        .modal-footer button[type="submit"] {
+          background: #28B6F6;
+          color: white;
+        } 
+        .modal-footer button[type="button"] {
+          background: #ccc;
+          color: black;
+        }
+      `}</style>
     </div>
   );
 };

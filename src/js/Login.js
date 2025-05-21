@@ -4,49 +4,47 @@ import "../css/Login.css";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
-import storage from "./store/authStore"; // Import storage module
+import storage from "./store/authStore";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate(); // For navigation
+  const navigate = useNavigate();
 
   const handleLogin = async () => {
     if (!email || !password) {
       Swal.fire({
         title: "Please fill in all fields.",
         icon: "error",
-        customClass: {
-          popup: "swal-popup",
-        },
+        customClass: { popup: "swal-popup" },
       });
       return;
     }
 
     try {
       const response = await axios.post(
-        "https://nagamedserver.onrender.com/api/auth/signin",
-        {
-          email,
-          password,
-        }
+        "https://nagamedserver.onrender.com/api/doctorauth/signin",
+        { email, password },
+        { headers: { "Content-Type": "application/json" } }
       );
-  
+
       if (response.status === 200) {
-        const token = response.data.token;
-        const userName = response.data.user?.name || response.data.user?.fullname || "Doctor";
-  
-        // Save token and name
-        storage.save("token", token);
-        storage.save("name", userName);
-  
+        const { data } = response.data;
+        const doctorId = data._id;
+        const userName = data.fullname || data.username || "Doctor";
+        const token = response.data.token || null; // Fallback to null if no token
+
+        // Save auth data
+        storage.save("auth", { doctorId, token, userName });
+
+        console.log("Login API response:", response.data); // Debug log
+        console.log("Saved auth data:", storage.load("auth")); // Debug log
+
         Swal.fire({
           title: "Login Success",
           icon: "success",
-          customClass: {
-            popup: "swal-popup",
-          },
-        }).then(() => navigate("/dashboard"));
+          customClass: { popup: "swal-popup" },
+        }).then(() => navigate("/Dashboard"));
       }
     } catch (error) {
       console.error("Error during login:", error);
@@ -54,9 +52,7 @@ const Login = () => {
         title: "Login Failed",
         text: error.response?.data?.message || "Something went wrong.",
         icon: "error",
-        customClass: {
-          popup: "swal-popup",
-        },
+        customClass: { popup: "swal-popup" },
       });
     }
   };
@@ -68,25 +64,21 @@ const Login = () => {
           <span className="naga">Naga</span>
           <span className="med">Med</span>
         </p>
-
         <p className="description">
           Seamless Access to your
           <br /> Healthcare - Anytime, Anywhere
         </p>
-
         <div className="loginbox">
           <p className="weba">Welcome Back</p>
-
           <div className="inputs">
             <p className="inputname">Email</p>
             <input
               className="inputfield"
-              type="text"
+              type="email"
               placeholder="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
-
             <p className="inputname2">Password</p>
             <input
               className="inputfield"
@@ -96,7 +88,6 @@ const Login = () => {
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-
           <div className="checks">
             <input type="checkbox" className="checkbox" id="remember" />
             <label htmlFor="remember" className="remember-label">
@@ -106,7 +97,6 @@ const Login = () => {
               Forgot Password?
             </Link>
           </div>
-
           <button className="btn" onClick={handleLogin}>
             Login
           </button>
@@ -116,14 +106,12 @@ const Login = () => {
               Sign up
             </Link>
           </p>
-
           <div className="socials">
             <img src={require("../images/google.png")} alt="google" />
             <img src={require("../images/fb.png")} alt="facebook" />
           </div>
         </div>
       </div>
-
       <div className="split right"></div>
     </div>
   );
