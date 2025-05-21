@@ -123,8 +123,8 @@ const Dailychart = () => {
 };
 
 // Placeholder for Activitychart and Patientchart
-const Activitychart = () => <div>Activity Chart Placeholder</div>;
-const Patientchart = () => <div>Patient Chart Placeholder</div>;
+const Activitychart = () => <div className="empty">No activities yet.</div>;
+const Patientchart = () => <div className="empty">No data found.</div>;
 
 const Dashboard = () => {
   const [name, setName] = useState("");

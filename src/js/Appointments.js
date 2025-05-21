@@ -483,7 +483,7 @@ const Appointments = () => {
         {loading && <div>Loading...</div>}
         {error && <div>Error: {error}</div>}
         {!loading && !error && appointmentsTableData.length === 0 && (
-          <div>No appointments found for this doctor.</div>
+          <div className="empty">No appointments found for this doctor.</div>
         )}
         {!loading && !error && appointmentsTableData.length > 0 && (
           <table className="S2-table1">
@@ -542,7 +542,7 @@ const Appointments = () => {
             <span className="S2-bottom-parttitle2">View All</span>
           </span>
           {!loading && !error && appointmentRequests.length === 0 && (
-            <div>No appointment requests found.</div>
+            <div className="empty">No appointment requests found.</div>
           )}
           {!loading && !error && appointmentRequests.length > 0 && (
             <table className="S2-bottom-parttable">
@@ -576,7 +576,7 @@ const Appointments = () => {
             </span>
           </span>
           {!loading && !error && todayAppointments.length === 0 && (
-            <div>No appointments today.</div>
+            <div className="empty">No appointments today.</div>
           )}
           {!loading && !error && todayAppointments.length > 0 && (
             <table className="S2-bottom-parttable">

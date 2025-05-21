@@ -216,3 +216,12 @@
   grid-template-columns: 1fr 1fr;
   gap: 20px;
 }
+
+.empty {
+  text-align: center;
+  font-family: "Poppins";
+  font-weight: 400;
+  font-size: 15px;
+  text-emphasis: italic;
+  padding: 15px;
+}
