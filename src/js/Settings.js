@@ -18,7 +18,6 @@ const Settings = () => {
 
     return (
         <div className="settings-container">
-            <h1 className="settings-title">Settings</h1>
             <div className="settings-options">
                 <div className="settings-item">
                     <SettingsOutlined className="settings-icon" />

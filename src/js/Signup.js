@@ -83,7 +83,7 @@ const Signup = () => {
 
         <p className="desc">
           Seamless Access to your
-          <br /> Healthcare - Anytime, Anywhere
+          Healthcare - Anytime, Anywhere
         </p>
 
         <div className="signupbox">
