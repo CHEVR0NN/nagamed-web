@@ -1,40 +1,91 @@
-import React from 'react';
+import React, { useState } from 'react';
 import "../css/ResetPass.css";
+import { Link } from "react-router-dom";
+import LockResetOutlinedIcon from '@mui/icons-material/LockResetOutlined';
 
 const ResetPassword = () => {
-  return (
-    <div className="reset-container">
-        <div className='reset-header'>
+  const [email, setEmail] = useState("");
+  const [showCodeInput, setShowCodeInput] = useState(false);
+  const [code, setCode] = useState("");
 
-        </div>
-        
-        <div className='reset-title'>
-        <p className="nagamed">
-          <span className="naga">Naga</span>
-          <span className="med">Med</span>
-          <span className='reset'> : Reset Password</span>
-        </p>
+  const handleSendLink = (e) => {
+    e.preventDefault();
+    // Here you would send the reset link to the email
+    setShowCodeInput(true);
+  };
+
+  const handleVerifyCode = (e) => {
+    e.preventDefault();
+    // Here you would verify the code
+    setShowCodeInput(false);
+    // Optionally, redirect to new password screen
+  };
+
+  return (
+    <div className="reset-bg">
+      <div className="reset-card">
+        <div className="reset-header">
+          <LockResetOutlinedIcon className="reset-icon" />
+          <div className="nagamed-r">
+            <span className="naga-r">Naga</span>
+            <span className="med-r">Med</span>
+          </div>
+          <h2 className="reset-title">Reset Password</h2>
+          <p className="reset-subtitle">
+            Enter your email address and we’ll send you a link to reset your password.
+          </p>
         </div>
 
         <div className="inputs">
-            <p className="inputname3">Email</p>
-            <input
-              className="inputfield"
-              type="email"
-              placeholder="Enter your email"
-            />
+          <input
+            className="inputfield"
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+            disabled={showCodeInput}
+          />
         </div>
 
-        <button className="reset-button">
-            <p className="reset-text">Send Reset Link</p>
-        </button>
-        {/* <div class="custom-shape-divider-bottom-1748009522">
-            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
-                <path d="M985.66,92.83C906.67,72,823.78,31,743.84,14.19c-82.26-17.34-168.06-16.33-250.45.39-57.84,11.73-114,31.07-172,41.86A600.21,600.21,0,0,1,0,27.35V120H1200V95.8C1132.19,118.92,1055.71,111.31,985.66,92.83Z" class="shape-fill"></path>
-            </svg>
-        </div> */}
-    </div>
+        {!showCodeInput && (
+          <button className="reset-button" onClick={handleSendLink}>
+            <span className="reset-text">Send Reset Link</span>
+          </button>
+        )}
 
+        {showCodeInput && (
+          <form onSubmit={handleVerifyCode} className="code-input-section">
+            <hr className='reset-hr'/>
+            <h3 className="reset-modal-title">Enter Verification Code</h3>
+            <p className="reset-modal-desc">Please enter the code sent to your email.</p>
+            <input
+              className="resetinputfield"
+              type="text"
+              placeholder="Enter code"
+              value={code}
+              onChange={e => setCode(e.target.value)}
+              maxLength={6}
+            />
+            <div className="reset-modal-actions">
+              <button className="reset-button" type="submit">
+                Verify Code
+              </button>
+              <button
+                className="reset-modal-cancel"
+                type="button"
+                onClick={() => setShowCodeInput(false)}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        )}
+
+        <div className="reset-footer">
+          <Link to="/" className="back-login-link">Back to Login</Link>
+        </div>
+      </div>
+    </div>
   );
 };
 
