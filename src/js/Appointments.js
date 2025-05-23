@@ -391,8 +391,14 @@ const Appointments = () => {
   const handleApprove = async (appointmentId) => {
     try {
       const authData = storage.load("auth");
-      const headers = { "Content-Type": "application/json" };
-      if (authData?.token) headers.Authorization = `Bearer ${authData.token}`;
+      if (!authData?.token) {
+        throw new Error("Authentication token missing");
+      }
+
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authData.token}`,
+      };
 
       const response = await axios.put(
         `https://nagamedserver.onrender.com/api/appointment/${appointmentId}`,
@@ -400,7 +406,11 @@ const Appointments = () => {
         { headers }
       );
 
-      const updatedAppointment = response.data.appointment || response.data;
+      if (!response.data?.appointment) {
+        throw new Error("Invalid response from server");
+      }
+
+      const updatedAppointment = response.data.appointment;
       setAppointmentsTableData((prev) =>
         prev.map((appt) =>
           appt.appointment_id === appointmentId ? { ...appt, status: "Approved" } : appt
@@ -422,10 +432,14 @@ const Appointments = () => {
         customClass: { popup: "swal-popup" },
       });
     } catch (error) {
-      console.error("Error approving appointment:", error.response?.data || error.message);
+      console.error("Error approving appointment:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
       Swal.fire({
         title: "Error",
-        text: error.response?.data?.message || "Failed to approve appointment.",
+        text: error.response?.data?.message || "Failed to approve appointment. Please try again.",
         icon: "error",
         customClass: { popup: "swal-popup" },
       });
@@ -435,8 +449,14 @@ const Appointments = () => {
   const handleDecline = async (appointmentId) => {
     try {
       const authData = storage.load("auth");
-      const headers = { "Content-Type": "application/json" };
-      if (authData?.token) headers.Authorization = `Bearer ${authData.token}`;
+      if (!authData?.token) {
+        throw new Error("Authentication token missing");
+      }
+
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authData.token}`,
+      };
 
       const response = await axios.put(
         `https://nagamedserver.onrender.com/api/appointment/${appointmentId}`,
@@ -444,7 +464,11 @@ const Appointments = () => {
         { headers }
       );
 
-      const updatedAppointment = response.data.appointment || response.data;
+      if (!response.data?.appointment) {
+        throw new Error("Invalid response from server");
+      }
+
+      const updatedAppointment = response.data.appointment;
       setAppointmentsTableData((prev) =>
         prev.map((appt) =>
           appt.appointment_id === appointmentId ? { ...appt, status: "Declined" } : appt
@@ -466,10 +490,14 @@ const Appointments = () => {
         customClass: { popup: "swal-popup" },
       });
     } catch (error) {
-      console.error("Error declining appointment:", error.response?.data || error.message);
+      console.error("Error declining appointment:", {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status,
+      });
       Swal.fire({
         title: "Error",
-        text: error.response?.data?.message || "Failed to decline appointment.",
+        text: error.response?.data?.message || "Failed to decline appointment. Please try again.",
         icon: "error",
         customClass: { popup: "swal-popup" },
       });
