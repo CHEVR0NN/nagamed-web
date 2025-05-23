@@ -57,6 +57,7 @@
     height: 15%;
     font-size: 20px;
     margin-top: 20px;
+    cursor: pointer;
 }
 
 .container-left-btn2 {
@@ -68,6 +69,7 @@
     width: 90%;
     height: 15%;
     font-size: 20px;
+    cursor: pointer;
 }
 
 .container-left-btn3 {
@@ -79,6 +81,7 @@
     width: 90%;
     height: 15%;
     font-size: 20px;
+    cursor: pointer;
 }
 
 .container-right-title {
@@ -115,6 +118,7 @@
     width: 30%;
     height: 50px;
     font-size: 20px;
+    cursor: pointer;
 }
 
 .container-right-btn2 {
@@ -125,6 +129,7 @@
     font-weight: 600;
     width: 60%;
     height: 50px;
+    cursor: pointer;
     font-size: 20px;
 }
 

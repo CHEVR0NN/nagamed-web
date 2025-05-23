@@ -61,10 +61,10 @@ const Messages = () => {
       <div className="sidebar">
         <div className="msg-header">
           <span className="msg-header-txt"><PeopleAlt style={{ color: "#2F80ED", marginRight: 5 }} /> People</span>
-          <div className="icons">
+          {/* <div className="icons">
             <PersonAddAltOutlined style={{ color: "#2F80ED" }} />
             <SearchOutlined style={{ color: "#2F80ED" }} />
-          </div>
+          </div> */}
         </div>
         <hr className="sidebar-hr" />
         {dummyPeople.map((p, i) => (
