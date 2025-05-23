@@ -81,7 +81,7 @@ const Login = () => {
         <div className="loginbox">
           <p className="weba">Welcome Back</p>
 
-          <div className="inputs">
+          <div className="login-inputs">
             <p className="inputname">Email</p>
             <input
               className="inputfield"

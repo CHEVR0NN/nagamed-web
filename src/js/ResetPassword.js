@@ -10,15 +10,15 @@ const ResetPassword = () => {
 
   const handleSendLink = (e) => {
     e.preventDefault();
-    // Here you would send the reset link to the email
+    // send the reset link to the email
     setShowCodeInput(true);
   };
 
   const handleVerifyCode = (e) => {
     e.preventDefault();
-    // Here you would verify the code
+    // verify the code
     setShowCodeInput(false);
-    // Optionally, redirect to new password screen
+    // or redirect to new password screen
   };
 
   return (
@@ -36,9 +36,9 @@ const ResetPassword = () => {
           </p>
         </div>
 
-        <div className="inputs">
+        <div className="reset-inputs">
           <input
-            className="inputfield"
+            className="inputfield-r"
             type="email"
             placeholder="Enter your email"
             value={email}
