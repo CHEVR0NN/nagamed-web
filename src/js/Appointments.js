@@ -1,6 +1,7 @@
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import ReactDOM from "react-dom";
 import { v4 as uuidv4 } from "uuid";
 import "../css/Appointments.css";
 import {
@@ -33,6 +34,10 @@ const Appointments = () => {
     appointment_date_time: "",
   });
   const [editFormData, setEditFormData] = useState(null);
+  const [clinicLoading, setClinicLoading] = useState(true);
+  const [patientSearch, setPatientSearch] = useState("");
+  const [filteredPatients, setFilteredPatients] = useState([]);
+  const [showPatientResults, setShowPatientResults] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,6 +45,7 @@ const Appointments = () => {
         const authData = storage.load("auth");
         console.log("Auth data from storage:", authData);
         if (!authData || !authData.doctorId) {
+          console.log("Navigating to '/' due to missing authData or doctorId");
           navigate("/");
           return;
         }
@@ -48,33 +54,40 @@ const Appointments = () => {
         const headers = { "Content-Type": "application/json" };
         if (token) headers.Authorization = `Bearer ${token}`;
 
-        // Fetch all appointments, patients, doctors, and clinics
         const [appointmentsRes, patientsRes, doctorsRes, clinicsRes] = await Promise.all([
-          axios.get("https://nagamedserver.onrender.com/api/appointment", { headers }), // Fetch all appointments
-          axios.get("https://nagamedserver.onrender.com/api/user", { headers }),
-          axios.get("https://nagamedserver.onrender.com/api/doctorauth/", { headers }),
-          axios.get("https://nagamedserver.onrender.com/api/clinic", { headers }),
+          axios.get(`http://localhost:10000/api/appointment/doctor/${doctorId}`, { headers }),
+          axios.get(`https://nagamedserver.onrender.com/api/user`, { headers }),
+          axios.get(`https://nagamedserver.onrender.com/api/doctorauth/`, { headers }),
+          axios.get(`https://nagamedserver.onrender.com/api/clinic`, { headers }),
         ]);
 
         console.log("Appointments response:", appointmentsRes.data);
+        console.log("Patients response:", patientsRes.data);
         console.log("Doctors response:", doctorsRes.data);
+        console.log("Clinics response:", clinicsRes.data);
 
-        // Filter appointments by doctorId
-        const appointments = Array.isArray(appointmentsRes.data)
-          ? appointmentsRes.data.filter((appt) => appt.doctor_id === doctorId)
-          : [];
+        const doctorsData = doctorsRes.data.data && Array.isArray(doctorsRes.data.data)
+          ? doctorsRes.data.data
+          : Array.isArray(doctorsRes.data)
+            ? doctorsRes.data
+            : [];
+        if (doctorsData.length === 0) {
+          console.warn("No doctors found in response");
+        }
+        setDoctors(doctorsData);
 
-        setPatients(patientsRes.data);
-        setDoctors(doctorsRes.data);
-        setClinics(clinicsRes.data);
+        const appointments = Array.isArray(appointmentsRes.data) ? appointmentsRes.data : [];
+        console.log("Appointments:", appointments);
 
-        // Main appointments table
+        setPatients(Array.isArray(patientsRes.data) ? patientsRes.data : []);
+        setClinics(Array.isArray(clinicsRes.data) ? clinicsRes.data : []);
+        setClinicLoading(false);
+
         const mainTableData = appointments.map((appt) => ({
-          patientName: appt.patient?.name || "Unknown",
-          contact: appt.patient?.contact || "N/A",
-          medicalHistory: appt.patient?.medicalHistory || "None",
-          doctorAssigned: appt.doctor?.fullname || 
-            (doctors.find((d) => d._id === appt.doctor_id)?.fullname || "Unknown"),
+          patientName: patients.find((p) => p._id === appt.patient_id)?.fullname || "Unknown",
+          contact: patients.find((p) => p._id === appt.patient_id)?.contact || "N/A",
+          medicalHistory: patients.find((p) => p._id === appt.patient_id)?.medicalHistory || "None",
+          doctorAssigned: doctorsData.find((d) => d._id === appt.doctor_id)?.fullname || authData.userName || "Unknown",
           dateTime: new Date(appt.appointment_date_time).toLocaleString("en-US", {
             month: "short",
             day: "numeric",
@@ -83,18 +96,17 @@ const Appointments = () => {
             minute: "numeric",
             hour12: true,
           }),
-          appointment_id: appt.appointment_id,
+          appointment_id: appt.appointment_id || appt._id,
           status: appt.status || "Pending",
           patient_id: appt.patient_id,
           doctor_id: appt.doctor_id,
           clinic_id: appt.clinic_id,
         }));
 
-        // Appointment requests (Pending status)
         const requestsData = appointments
           .filter((appt) => appt.status === "Pending")
           .map((appt) => ({
-            name: appt.patient?.name || "Unknown",
+            name: patients.find((p) => p._id === appt.patient_id)?.fullname || appt.patient?.name || "Unknown",
             date: new Date(appt.appointment_date_time).toLocaleDateString(),
             time: new Date(appt.appointment_date_time).toLocaleTimeString([], {
               hour: "numeric",
@@ -102,26 +114,27 @@ const Appointments = () => {
               hour12: true,
             }),
             status: appt.status || "Pending",
-            appointment_id: appt.appointment_id,
+            appointment_id: appt.appointment_id || appt._id,
           }));
 
-        // Today's appointments
         const today = new Date().toDateString();
         const todayData = appointments
-          .filter(
-            (appt) => new Date(appt.appointment_date_time).toDateString() === today
-          )
+          .filter((appt) => new Date(appt.appointment_date_time).toDateString() === today)
           .map((appt) => ({
-            name: appt.patient?.name || "Unknown",
+            name: patients.find((p) => p._id === appt.patient_id)?.fullname || appt.patient?.name || "Unknown",
             status: appt.status || "Pending",
-            appointment_id: appt.appointment_id,
+            appointment_id: appt.appointment_id || appt._id,
           }));
 
         setAppointmentsTableData(mainTableData);
         setAppointmentRequests(requestsData);
         setTodayAppointments(todayData);
       } catch (err) {
-        console.error("Error fetching data:", err.response?.data || err.message);
+        console.error("Error fetching data:", {
+          message: err.message,
+          response: err.response?.data,
+          status: err.response?.status,
+        });
         setError(err.response?.data?.message || "Failed to fetch data.");
         Swal.fire({
           title: "Error",
@@ -136,6 +149,17 @@ const Appointments = () => {
 
     fetchData();
   }, [navigate]);
+
+  useEffect(() => {
+    if (patientSearch.trim() === "") {
+      setFilteredPatients(patients);
+    } else {
+      const filtered = patients.filter(patient => 
+        patient.fullname?.toLowerCase().includes(patientSearch.toLowerCase())
+      );
+      setFilteredPatients(filtered);
+    }
+  }, [patientSearch, patients]);
 
   const handleAddSubmit = async (e) => {
     e.preventDefault();
@@ -170,14 +194,13 @@ const Appointments = () => {
         { headers }
       );
 
-      const newAppointment = response.data;
+      const newAppointment = response.data.appointment || response.data;
       const newTableData = {
-        patientName: patients.find((p) => p._id === newAppointment.patient_id)?.name || "Unknown",
-        contact: patients.find((p) => p._id === newAppointment.patient_id)?.contact || "N/A",
+        patientName: patients.find((p) => p._id === newAppointment.patient_id)?.fullname || newAppointment.patient?.name || "Unknown",
+        contact: patients.find((p) => p._id === newAppointment.patient_id)?.contact || newAppointment.patient?.contact || "N/A",
         medicalHistory:
-          patients.find((p) => p._id === newAppointment.patient_id)?.medicalHistory || "None",
-        doctorAssigned:
-          doctors.find((d) => d._id === newAppointment.doctor_id)?.fullname || "Unknown",
+          patients.find((p) => p._id === newAppointment.patient_id)?.medicalHistory || newAppointment.patient?.medicalHistory || "None",
+        doctorAssigned: doctors.find((d) => d._id === newAppointment.doctor_id)?.fullname || authData.userName || "Unknown",
         dateTime: new Date(newAppointment.appointment_date_time).toLocaleString("en-US", {
           month: "short",
           day: "numeric",
@@ -186,7 +209,7 @@ const Appointments = () => {
           minute: "numeric",
           hour12: true,
         }),
-        appointment_id: newAppointment.appointment_id,
+        appointment_id: newAppointment.appointment_id || newAppointment._id,
         status: newAppointment.status || "Pending",
         patient_id: newAppointment.patient_id,
         doctor_id: newAppointment.doctor_id,
@@ -206,7 +229,7 @@ const Appointments = () => {
               hour12: true,
             }),
             status: newAppointment.status || "Pending",
-            appointment_id: newAppointment.appointment_id,
+            appointment_id: newAppointment.appointment_id || newAppointment._id,
           },
         ]);
       }
@@ -218,7 +241,7 @@ const Appointments = () => {
           {
             name: newTableData.patientName,
             status: newAppointment.status || "Pending",
-            appointment_id: newAppointment.appointment_id,
+            appointment_id: newAppointment.appointment_id || newAppointment._id,
           },
         ]);
       }
@@ -231,6 +254,8 @@ const Appointments = () => {
         clinic_id: "",
         appointment_date_time: "",
       });
+      setPatientSearch("");
+      setShowPatientResults(false);
 
       Swal.fire({
         title: "Success",
@@ -239,6 +264,7 @@ const Appointments = () => {
         customClass: { popup: "swal-popup" },
       });
     } catch (error) {
+      console.error("Error creating appointment:", error.response?.data || error.message);
       Swal.fire({
         title: "Error",
         text: error.response?.data?.message || "Failed to create appointment.",
@@ -272,18 +298,23 @@ const Appointments = () => {
 
       const response = await axios.put(
         `https://nagamedserver.onrender.com/api/appointment/${editFormData.appointment_id}`,
-        editFormData,
+        {
+          patient_id: editFormData.patient_id,
+          doctor_id: editFormData.doctor_id,
+          clinic_id: editFormData.clinic_id,
+          appointment_date_time: editFormData.appointment_date_time,
+          status: editFormData.status,
+        },
         { headers }
       );
 
-      const updatedAppointment = response.data;
+      const updatedAppointment = response.data.appointment || response.data;
       const updatedTableData = {
-        patientName: patients.find((p) => p._id === updatedAppointment.patient_id)?.name || "Unknown",
-        contact: patients.find((p) => p._id === updatedAppointment.patient_id)?.contact || "N/A",
+        patientName: patients.find((p) => p._id === updatedAppointment.patient_id)?.fullname || updatedAppointment.patient?.name || "Unknown",
+        contact: patients.find((p) => p._id === updatedAppointment.patient_id)?.contact || updatedAppointment.patient?.contact || "N/A",
         medicalHistory:
-          patients.find((p) => p._id === updatedAppointment.patient_id)?.medicalHistory || "None",
-        doctorAssigned:
-          doctors.find((d) => d._id === updatedAppointment.doctor_id)?.fullname || "Unknown",
+          patients.find((p) => p._id === updatedAppointment.patient_id)?.medicalHistory || updatedAppointment.patient?.medicalHistory || "None",
+        doctorAssigned: doctors.find((d) => d._id === updatedAppointment.doctor_id)?.fullname || authData.userName || "Unknown",
         dateTime: new Date(updatedAppointment.appointment_date_time).toLocaleString("en-US", {
           month: "short",
           day: "numeric",
@@ -292,7 +323,7 @@ const Appointments = () => {
           minute: "numeric",
           hour12: true,
         }),
-        appointment_id: updatedAppointment.appointment_id,
+        appointment_id: updatedAppointment.appointment_id || updatedAppointment._id,
         status: updatedAppointment.status || "Pending",
         patient_id: updatedAppointment.patient_id,
         doctor_id: updatedAppointment.doctor_id,
@@ -300,12 +331,12 @@ const Appointments = () => {
       };
 
       setAppointmentsTableData((prev) =>
-        prev.map((appt) => (appt.appointment_id === updatedAppointment.appointment_id ? updatedTableData : appt))
+        prev.map((appt) => (appt.appointment_id === updatedTableData.appointment_id ? updatedTableData : appt))
       );
       setAppointmentRequests((prev) =>
         updatedAppointment.status === "Pending"
           ? prev.map((req) =>
-              req.appointment_id === updatedAppointment.appointment_id
+              req.appointment_id === updatedTableData.appointment_id
                 ? {
                     name: updatedTableData.patientName,
                     date: new Date(updatedAppointment.appointment_date_time).toLocaleDateString(),
@@ -315,28 +346,30 @@ const Appointments = () => {
                       hour12: true,
                     }),
                     status: updatedAppointment.status || "Pending",
-                    appointment_id: updatedAppointment.appointment_id,
+                    appointment_id: updatedTableData.appointment_id,
                   }
                 : req
             )
-          : prev.filter((req) => req.appointment_id !== updatedAppointment.appointment_id)
+          : prev.filter((req) => req.appointment_id !== updatedTableData.appointment_id)
       );
       setTodayAppointments((prev) =>
         new Date(updatedAppointment.appointment_date_time).toDateString() === new Date().toDateString()
           ? prev.map((appt) =>
-              appt.appointment_id === updatedAppointment.appointment_id
+              appt.appointment_id === updatedTableData.appointment_id
                 ? {
                     name: updatedTableData.patientName,
                     status: updatedAppointment.status || "Pending",
-                    appointment_id: updatedAppointment.appointment_id,
+                    appointment_id: updatedTableData.appointment_id,
                   }
                 : appt
             )
-          : prev.filter((appt) => appt.appointment_id !== updatedAppointment.appointment_id)
+          : prev.filter((appt) => appt.appointment_id !== updatedTableData.appointment_id)
       );
 
       setShowEditPopup(false);
       setEditFormData(null);
+      setPatientSearch("");
+      setShowPatientResults(false);
 
       Swal.fire({
         title: "Success",
@@ -345,6 +378,7 @@ const Appointments = () => {
         customClass: { popup: "swal-popup" },
       });
     } catch (error) {
+      console.error("Error updating appointment:", error.response?.data || error.message);
       Swal.fire({
         title: "Error",
         text: error.response?.data?.message || "Failed to update appointment.",
@@ -360,12 +394,13 @@ const Appointments = () => {
       const headers = { "Content-Type": "application/json" };
       if (authData?.token) headers.Authorization = `Bearer ${authData.token}`;
 
-      await axios.put(
+      const response = await axios.put(
         `https://nagamedserver.onrender.com/api/appointment/${appointmentId}`,
         { status: "Approved" },
         { headers }
       );
 
+      const updatedAppointment = response.data.appointment || response.data;
       setAppointmentsTableData((prev) =>
         prev.map((appt) =>
           appt.appointment_id === appointmentId ? { ...appt, status: "Approved" } : appt
@@ -387,6 +422,7 @@ const Appointments = () => {
         customClass: { popup: "swal-popup" },
       });
     } catch (error) {
+      console.error("Error approving appointment:", error.response?.data || error.message);
       Swal.fire({
         title: "Error",
         text: error.response?.data?.message || "Failed to approve appointment.",
@@ -402,12 +438,13 @@ const Appointments = () => {
       const headers = { "Content-Type": "application/json" };
       if (authData?.token) headers.Authorization = `Bearer ${authData.token}`;
 
-      await axios.put(
+      const response = await axios.put(
         `https://nagamedserver.onrender.com/api/appointment/${appointmentId}`,
         { status: "Declined" },
         { headers }
       );
 
+      const updatedAppointment = response.data.appointment || response.data;
       setAppointmentsTableData((prev) =>
         prev.map((appt) =>
           appt.appointment_id === appointmentId ? { ...appt, status: "Declined" } : appt
@@ -429,6 +466,7 @@ const Appointments = () => {
         customClass: { popup: "swal-popup" },
       });
     } catch (error) {
+      console.error("Error declining appointment:", error.response?.data || error.message);
       Swal.fire({
         title: "Error",
         text: error.response?.data?.message || "Failed to decline appointment.",
@@ -439,8 +477,9 @@ const Appointments = () => {
   };
 
   const openEditPopup = (appointment) => {
+    console.log("Setting edit form data:", appointment);
     setEditFormData({
-      appointment_id: appointment.appointment_id,
+      appointment_id: appointment.appointment_id || appointment._id,
       patient_id: appointment.patient_id || "",
       doctor_id: appointment.doctor_id || "",
       clinic_id: appointment.clinic_id || "",
@@ -449,7 +488,11 @@ const Appointments = () => {
         .slice(0, 16),
       status: appointment.status || "Pending",
     });
+    setPatientSearch(
+      patients.find((p) => p._id === appointment.patient_id)?.fullname || "Unknown"
+    );
     setShowEditPopup(true);
+    console.log("showEditPopup set to true");
   };
 
   return (
@@ -457,10 +500,7 @@ const Appointments = () => {
       <div className="S2-title">
         <span className="S2-title-main">Appointments</span>
         <div className="S2-title-btns">
-          <button
-            className="S2-title-btn1"
-            onClick={() => setShowAddPopup(true)}
-          >
+          <button className="S2-title-btn1" onClick={() => { console.log("Opening add popup"); setShowAddPopup(true); }}>
             Add Appointment <AddCircleOutlineOutlined style={{ fontSize: 15 }} />
           </button>
           <button
@@ -483,7 +523,7 @@ const Appointments = () => {
         {loading && <div>Loading...</div>}
         {error && <div>Error: {error}</div>}
         {!loading && !error && appointmentsTableData.length === 0 && (
-          <div className="empty">No appointments found for this doctor.</div>
+          <div>No appointments found for this doctor. Try adding a new appointment.</div>
         )}
         {!loading && !error && appointmentsTableData.length > 0 && (
           <table className="S2-table1">
@@ -506,11 +546,7 @@ const Appointments = () => {
                   <td>{item.doctorAssigned}</td>
                   <td>{item.dateTime}</td>
                   <td className="actionbtns">
-                    <a
-                      className="actionbtn1"
-                      href="#"
-                      onClick={() => openEditPopup(item)}
-                    >
+                    <a className="actionbtn1" href="#" onClick={() => { console.log("Opening edit popup for", item); openEditPopup(item); }}>
                       View
                     </a>
                     <button
@@ -542,7 +578,7 @@ const Appointments = () => {
             <span className="S2-bottom-parttitle2">View All</span>
           </span>
           {!loading && !error && appointmentRequests.length === 0 && (
-            <div className="empty">No appointment requests found.</div>
+            <div>No appointment requests found.</div>
           )}
           {!loading && !error && appointmentRequests.length > 0 && (
             <table className="S2-bottom-parttable">
@@ -576,7 +612,7 @@ const Appointments = () => {
             </span>
           </span>
           {!loading && !error && todayAppointments.length === 0 && (
-            <div className="empty">No appointments today.</div>
+            <div>No appointments today.</div>
           )}
           {!loading && !error && todayAppointments.length > 0 && (
             <table className="S2-bottom-parttable">
@@ -599,10 +635,10 @@ const Appointments = () => {
         </span>
       </div>
 
-      {/* Add Appointment Popup */}
-      {showAddPopup && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+      {/* Add Appointment Popup with Portal */}
+      {showAddPopup && ReactDOM.createPortal(
+        <div className="popup-overlay">
+          <div className="popup-content">
             <div className="modal-header">
               <Close
                 className="modal-close"
@@ -615,20 +651,37 @@ const Appointments = () => {
               <div className="modal-body">
                 <label>
                   Patient:
-                  <select
-                    value={formData.patient_id}
-                    onChange={(e) =>
-                      setFormData({ ...formData, patient_id: e.target.value })
-                    }
-                  >
-                    <option value="">Select Patient</option>
-                    {patients.map((patient) => (
-                      <option key={patient._id} value={patient._id}>
-                        {patient.name || "Unknown"}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="searchable-input">
+                    <input
+                      type="text"
+                      placeholder="Search patient by name"
+                      value={patientSearch}
+                      onChange={(e) => {
+                        setPatientSearch(e.target.value);
+                        setShowPatientResults(true);
+                      }}
+                      onFocus={() => setShowPatientResults(true)}
+                    />
+                    {showPatientResults && filteredPatients.length > 0 && (
+                      <div className="search-results">
+                        {filteredPatients.map((patient) => (
+                          <div
+                            key={patient._id}
+                            className="search-result-item"
+                            onClick={() => {
+                              setFormData({ ...formData, patient_id: patient._id });
+                              setPatientSearch(patient.fullname || "Unknown");
+                              setShowPatientResults(false);
+                            }}
+                          >
+                            {patient.fullname || "Unknown"}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </label>
+                
                 <label>
                   Doctor:
                   <select
@@ -645,22 +698,28 @@ const Appointments = () => {
                     ))}
                   </select>
                 </label>
+                
                 <label>
                   Clinic:
-                  <select
-                    value={formData.clinic_id}
-                    onChange={(e) =>
-                      setFormData({ ...formData, clinic_id: e.target.value })
-                    }
-                  >
-                    <option value="">Select Clinic</option>
-                    {clinics.map((clinic) => (
-                      <option key={clinic._id} value={clinic._id}>
-                        {clinic.name || "Unknown"}
-                      </option>
-                    ))}
-                  </select>
+                  {clinicLoading ? (
+                    <input type="text" value="Loading clinics..." disabled />
+                  ) : (
+                    <select
+                      value={formData.clinic_id}
+                      onChange={(e) =>
+                        setFormData({ ...formData, clinic_id: e.target.value })
+                      }
+                    >
+                      <option value="">Select Clinic</option>
+                      {clinics.map((clinic) => (
+                        <option key={clinic._id} value={clinic._id}>
+                          {clinic.clinic_name || "Unknown Clinic"}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </label>
+                
                 <label>
                   Date & Time:
                   <input
@@ -675,24 +734,22 @@ const Appointments = () => {
                   />
                 </label>
               </div>
-              <div className="modal-footer">
+              <div className="popup-buttons">
                 <button type="submit">Save</button>
-                <button
-                  type="button"
-                  onClick={() => setShowAddPopup(false)}
-                >
+                <button type="button" onClick={() => setShowAddPopup(false)}>
                   Cancel
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
-      {/* Edit Appointment Popup */}
-      {showEditPopup && editFormData && (
-        <div className="modal-overlay">
-          <div className="modal-content">
+      {/* Edit Appointment Popup with Portal */}
+      {showEditPopup && editFormData && ReactDOM.createPortal(
+        <div className="popup-overlay">
+          <div className="popup-content2-edit">
             <div className="modal-header">
               <Close
                 className="modal-close"
@@ -705,20 +762,37 @@ const Appointments = () => {
               <div className="modal-body">
                 <label>
                   Patient:
-                  <select
-                    value={editFormData.patient_id}
-                    onChange={(e) =>
-                      setEditFormData({ ...editFormData, patient_id: e.target.value })
-                    }
-                  >
-                    <option value="">Select Patient</option>
-                    {patients.map((patient) => (
-                      <option key={patient._id} value={patient._id}>
-                        {patient.name || "Unknown"}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="searchable-input">
+                    <input
+                      type="text"
+                      placeholder="Search patient by name"
+                      value={patientSearch}
+                      onChange={(e) => {
+                        setPatientSearch(e.target.value);
+                        setShowPatientResults(true);
+                      }}
+                      onFocus={() => setShowPatientResults(true)}
+                    />
+                    {showPatientResults && filteredPatients.length > 0 && (
+                      <div className="search-results">
+                        {filteredPatients.map((patient) => (
+                          <div
+                            key={patient._id}
+                            className="search-result-item"
+                            onClick={() => {
+                              setEditFormData({ ...editFormData, patient_id: patient._id });
+                              setPatientSearch(patient.fullname || "Unknown");
+                              setShowPatientResults(false);
+                            }}
+                          >
+                            {patient.fullname || "Unknown"}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </label>
+                
                 <label>
                   Doctor:
                   <select
@@ -735,22 +809,28 @@ const Appointments = () => {
                     ))}
                   </select>
                 </label>
+                
                 <label>
                   Clinic:
-                  <select
-                    value={editFormData.clinic_id}
-                    onChange={(e) =>
-                      setEditFormData({ ...editFormData, clinic_id: e.target.value })
-                    }
-                  >
-                    <option value="">Select Clinic</option>
-                    {clinics.map((clinic) => (
-                      <option key={clinic._id} value={clinic._id}>
-                        {clinic.name || "Unknown"}
-                      </option>
-                    ))}
-                  </select>
+                  {clinicLoading ? (
+                    <input type="text" value="Loading clinics..." disabled />
+                  ) : (
+                    <select
+                      value={editFormData.clinic_id}
+                      onChange={(e) =>
+                        setEditFormData({ ...editFormData, clinic_id: e.target.value })
+                      }
+                    >
+                      <option value="">Select Clinic</option>
+                      {clinics.map((clinic) => (
+                        <option key={clinic._id} value={clinic._id}>
+                          {clinic.clinic_name || "Unknown Clinic"}
+                        </option>
+                      ))}
+                    </select>
+                  )}
                 </label>
+                
                 <label>
                   Date & Time:
                   <input
@@ -764,103 +844,32 @@ const Appointments = () => {
                     }
                   />
                 </label>
+                
+                <label>
+                  Status:
+                  <select
+                    value={editFormData.status}
+                    onChange={(e) =>
+                      setEditFormData({ ...editFormData, status: e.target.value })
+                    }
+                  >
+                    <option value="Pending">Pending</option>
+                    <option value="Approved">Approved</option>
+                    <option value="Declined">Declined</option>
+                  </select>
+                </label>
               </div>
-              <div className="modal-footer">
+              <div className="popup-buttons">
                 <button type="submit">Save</button>
-                <button
-                  type="button"
-                  onClick={() => setShowEditPopup(false)}
-                >
+                <button type="button" onClick={() => setShowEditPopup(false)}>
                   Cancel
                 </button>
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
-
-      <style jsx>{`
-        .modal-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          z-index: 1000;
-        }
-        .modal-content {
-          background: white;
-          padding: 20px;
-          border-radius: 8px;
-          width: 400px;
-          max-width: 90%;
-          max-height: 600px;
-          overflow-y: auto;
-          position: relative;
-        }
-        .modal-header {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          margin-bottom: 20px;
-          position: relative;
-        }
-        .modal-header h2 {
-          margin: 10px 0 0 0;
-          font-size: 1.5rem;
-          text-align: center;
-        }
-        .modal-close {
-          position: absolute;
-          top: 10px;
-          left: 10px;
-          font-size: 24px;
-          cursor: pointer;
-          color: #333;
-        }
-        .modal-body {
-          display: flex;
-          flex-direction: column;
-          gap: 15px;
-        }
-        .modal-body label {
-          display: flex;
-          flex-direction: column;
-          font-size: 0.9rem;
-        }
-        .modal-body select,
-        .modal-body input {
-          margin-top: 5px;
-          padding: 8px;
-          border: 1px solid #ccc;
-          border-radius: 4px;
-          font-size: 1rem;
-        }
-        .modal-footer {
-          display: flex;
-          justify-content: flex-end;
-          gap: 10px;
-          margin-top: 20px;
-        }
-        .modal-footer button {
-          padding: 8px 16px;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-        .modal-footer button[type="submit"] {
-          background: #28B6F6;
-          color: white;
-        } 
-        .modal-footer button[type="button"] {
-          background: #ccc;
-          color: black;
-        }
-      `}</style>
     </div>
   );
 };

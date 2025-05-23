@@ -52,7 +52,7 @@ const Dailychart = () => {
         if (token) headers.Authorization = `Bearer ${token}`;
 
         const response = await axios.get(
-          `https://nagamedserver.onrender.com/api/appointment?doctor_id=${doctorId}`,
+          `http://localhost:10000/api/appointment?doctor_id=${doctorId}`,
           { headers }
         );
 
