@@ -306,14 +306,29 @@ const Signup = () => {
             </button>
 
             <p className="signupinputname2">Password</p>
-            <input
-              className="signupinputfield"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-            />
+            <div className="password-container">
+              <input
+                className="signupinputfield"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+              <span
+                className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={0}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <VisibilityOutlined style={{ marginTop: "10px" }} />
+                ) : (
+                  <VisibilityOffOutlined style={{ marginTop: "10px" }} />
+                )}
+              </span>
+            </div>
+
 
             <p className="signupinputname2">Confirm Password</p>
             <div className="password-container">
