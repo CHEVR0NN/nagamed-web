@@ -253,12 +253,10 @@ const Signup = () => {
 
             <p className="signupinputname">Availability</p>
             {availability.map((avail, index) => (
-              <div
-                key={index}
-                style={{ display: "flex", gap: "10px", marginBottom: "10px" }}
-              >
+
+              <div key={index} className="availability-container">
                 <select
-                  className="signupinputfield"
+                  className="signupinputfield-a"
                   value={avail.day}
                   onChange={(e) =>
                     handleAvailabilityChange(index, "day", e.target.value)
@@ -276,7 +274,7 @@ const Signup = () => {
                   <option value="Sunday">Sunday</option>
                 </select>
                 <input
-                  className="signupinputfield"
+                  className="signupinputfield-a"
                   type="text"
                   placeholder="e.g., 09:00 AM - 12:00 PM"
                   value={avail.time}
@@ -291,12 +289,7 @@ const Signup = () => {
                     type="button"
                     onClick={() => handleRemoveAvailability(index)}
                     disabled={loading}
-                    style={{
-                      background: "none",
-                      border: "none",
-                      color: "red",
-                      cursor: "pointer",
-                    }}
+                    className="removebtn"
                   >
                     Remove
                   </button>
@@ -307,7 +300,7 @@ const Signup = () => {
               type="button"
               onClick={handleAddAvailability}
               disabled={loading}
-              style={{ marginTop: "5px", padding: "5px 10px" }}
+              className="availabilitybtn"
             >
               Add Availability
             </button>

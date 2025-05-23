@@ -528,9 +528,9 @@ const Appointments = () => {
       <div className="S2-title">
         <span className="S2-title-main">Appointments</span>
         <div className="S2-title-btns">
-          <button className="S2-title-btn1" onClick={() => { console.log("Opening add popup"); setShowAddPopup(true); }}>
+          {/* <button className="S2-title-btn1" onClick={() => { console.log("Opening add popup"); setShowAddPopup(true); }}>
             Add Appointment <AddCircleOutlineOutlined style={{ fontSize: 15 }} />
-          </button>
+          </button> */}
           <button
             className="S2-title-btn2"
             onClick={() =>
