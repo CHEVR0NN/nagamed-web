@@ -10,6 +10,7 @@ import Reports from "./js/Reports";
 import Settings from "./js/Settings";
 import Header from "./js/Header";
 import storage from "./js/store/authStore";
+import ResetPass from "./js/ResetPassword";
 
 const ProtectedRoute = ({ children }) => {
   const authData = storage.load("auth");
@@ -18,8 +19,8 @@ const ProtectedRoute = ({ children }) => {
 
 const App = () => {
   const location = useLocation();
-  const showNavbar = location.pathname !== "/" && location.pathname !== "/Signup";
-  const showHeader = location.pathname !== "/" && location.pathname !== "/Signup";
+  const showNavbar = location.pathname !== "/" && location.pathname !== "/Signup" && location.pathname !== "/ResetPass";
+  const showHeader = location.pathname !== "/" && location.pathname !== "/Signup" && location.pathname !== "/ResetPass";
 
   return (
     <div style={{ display: "flex" }}>
@@ -86,6 +87,7 @@ const App = () => {
                 </ProtectedRoute>
               }
             />
+            <Route path="/ResetPass" element={<ResetPass />} />
           </Routes>
         </div>
       </div>

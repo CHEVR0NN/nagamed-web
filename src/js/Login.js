@@ -6,6 +6,7 @@ import Swal from "sweetalert2";
 import axios from "axios";
 import storage from "./store/authStore";
 import { VisibilityOutlined, VisibilityOffOutlined } from "@mui/icons-material";
+import ResetPass from './ResetPassword.js';
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -123,7 +124,7 @@ const Login = () => {
             <label htmlFor="remember" className="remember-label">
               Remember me
             </label>
-            <Link to="#" className="forgot-password">
+            <Link to="/ResetPass" className="forgot-password">
               Forgot Password?
             </Link>
           </div>
