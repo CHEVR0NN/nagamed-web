@@ -33,7 +33,7 @@ div {
 .split.right {
     width: 40%;
     height: 100vh;
-    background-image: url('../images/logindoc.png');
+    background-image: url('../images/signupbg.jpg');
     background-size: cover;
     background-position: center;
     border-top-left-radius: 11%;
@@ -277,4 +277,25 @@ div {
   color: #fff !important;
   border-radius: 6px;
   font-weight: 500;
+}
+
+.alertalert {
+  display: flex;
+  justify-content: flex-start;
+  margin-left: 22%;
+}
+
+.loginerrormsg {
+  color: red !important;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 400;
+  margin-top: 10px;
+}
+
+.login-password-container {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-left: 20%;
 }

@@ -5,19 +5,24 @@ import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
 import storage from "./store/authStore";
+import { VisibilityOutlined, VisibilityOffOutlined } from "@mui/icons-material";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const [message, setMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
-      Swal.fire({
-        title: "Please fill in all fields.",
-        icon: "error",
-        customClass: { popup: "swal-popup" },
-      });
+      // Swal.fire({
+      //   title: "Please fill in all fields.",
+      //   icon: "error",
+      //   customClass: { popup: "swal-popup" },
+      // });
+      setMessage('Please fill in all fields.');
+      
       return;
     }
 
@@ -48,28 +53,33 @@ const Login = () => {
       }
     } catch (error) {
       console.error("Error during login:", error);
-      Swal.fire({
-        title: "Login Failed",
-        text: error.response?.data?.message || "Something went wrong.",
-        icon: "error",
-        customClass: { popup: "swal-popup" },
-      });
+      // Swal.fire({
+      //   title: "Login Failed",
+      //   text: error.response?.data?.message || "Something went wrong.",
+      //   icon: "error",
+      //   customClass: { popup: "swal-popup" },
+      // });
+      setMessage(error.response?.data?.message || "Something went wrong.");
     }
   };
 
   return (
     <div className="dashboardcont">
+
       <div className="split left">
         <p className="nagamed">
           <span className="naga">Naga</span>
           <span className="med">Med</span>
         </p>
+
         <p className="description">
           Seamless Access to your
           <br /> Healthcare - Anytime, Anywhere
         </p>
+
         <div className="loginbox">
           <p className="weba">Welcome Back</p>
+
           <div className="inputs">
             <p className="inputname">Email</p>
             <input
@@ -80,15 +90,35 @@ const Login = () => {
               onChange={(e) => setEmail(e.target.value)}
             />
             <p className="inputname2">Password</p>
-            <input
+            <div className="login-password-container">
+              <input
               className="inputfield"
-              type="password"
+              type={showPassword ? "text" : "password"}
               placeholder="Enter your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-            />
+              />
+
+              <span className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={0}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                {showPassword ? 
+                <VisibilityOutlined /> 
+                : <VisibilityOffOutlined/>}
+              </span>
+
+            </div>
+
+            <div className="alertalert">
+            {message && <p className="loginerrormsg">{message}</p>}
+            </div>
+
           </div>
+
           <div className="checks">
+            
             <input type="checkbox" className="checkbox" id="remember" />
             <label htmlFor="remember" className="remember-label">
               Remember me
