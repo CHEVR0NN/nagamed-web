@@ -70,14 +70,25 @@ const Signup = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSignup = async () => {
-    // Validate all required fields
-    if (!fullname || !username || !email || !specialization || !password || !confirmPassword) {
-      Swal.fire({
-        title: "Validation Error",
-        text: "Please fill in all fields.",
-        icon: "warning",
-        customClass: { popup: "swal-popup" },
-      });
+    if (
+      !fullname ||
+      !username ||
+      !email ||
+      !specialization ||
+      !password ||
+      !confirmPassword ||
+      !clinicId ||
+      !address ||
+      !contact ||
+      availability.some((a) => !a.day || !a.time)
+    ) {
+      // Swal.fire({
+      //   title: "Validation Error",
+      //   text: "Please fill in all fields.",
+      //   icon: "warning",
+      //   customClass: { popup: "swal-popup" },
+      // });
+      setMessage('Please fill in all fields.');
       return;
     }
 
@@ -302,28 +313,14 @@ const Signup = () => {
             </button>
 
             <p className="signupinputname2">Password</p>
-            <div className="password-container">
-              <input
-                className="signupinputfield"
-                type={showPassword ? "text" : "password"}
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                disabled={loading}
-              />
-
-              <span className="toggle-password"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={0}
-                aria-label={showPassword ? "Hide password" : "Show password"}
-                >
-                {showPassword ? 
-                <VisibilityOutlined style={{ marginTop: "10px" }}/> 
-                : <VisibilityOffOutlined style={{ marginTop: "10px" }}/>}
-              </span>
-
-            </div>
-
+            <input
+              className="signupinputfield"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={loading}
+            />
 
             <p className="signupinputname2">Confirm Password</p>
             <div className="password-container">
