@@ -1,8 +1,10 @@
 import * as React from "react";
+import { useState } from "react";
 import "../css/Signup.css";
 import { Link, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { VisibilityOutlined, VisibilityOffOutlined } from "@mui/icons-material";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -13,26 +15,31 @@ const Signup = () => {
   const [password, setPassword] = React.useState("");
   const [confirmPassword, setConfirmPassword] = React.useState("");
   const [loading, setLoading] = React.useState(false); // Added loading state
+  const [message, setMessage] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSignup = async () => {
     // Validate all required fields
     if (!fullname || !username || !email || !specialization || !password || !confirmPassword) {
-      Swal.fire({
-        title: "Validation Error",
-        text: "Please fill in all fields.",
-        icon: "warning",
-        customClass: { popup: "swal-popup" },
-      });
+      // Swal.fire({
+      //   title: "Validation Error",
+      //   text: "Please fill in all fields.",
+      //   icon: "warning",
+      //   customClass: { popup: "swal-popup" },
+      // });
+      setMessage('Please fill in all fields.');
       return;
     }
 
     if (password !== confirmPassword) {
-      Swal.fire({
-        title: "Password Mismatch",
-        text: "Passwords do not match. Please try again.",
-        icon: "error",
-        customClass: { popup: "swal-popup" },
-      });
+      // Swal.fire({
+      //   title: "Password Mismatch",
+      //   text: "Passwords do not match. Please try again.",
+      //   icon: "error",
+      //   customClass: { popup: "swal-popup" },
+      // });
+      setMessage('Passwords do not match. Please try again.');
       return;
     }
 
@@ -60,12 +67,13 @@ const Signup = () => {
       } else if (error.request) {
         errorMessage = "Network error. Please check your connection.";
       }
-      Swal.fire({
-        title: "Signup Failed",
-        text: errorMessage,
-        icon: "error",
-        customClass: { popup: "swal-popup" },
-      });
+      // Swal.fire({
+      //   title: "Signup Failed",
+      //   text: errorMessage,
+      //   icon: "error",
+      //   customClass: { popup: "swal-popup" },
+      // });
+      setMessage(errorMessage);
     } finally {
       setLoading(false); // Reset loading state
     }
@@ -131,24 +139,55 @@ const Signup = () => {
             />
 
             <p className="signupinputname2">Password</p>
-            <input
-              className="signupinputfield"
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              disabled={loading}
-            />
+            <div className="password-container">
+              <input
+                className="signupinputfield"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+              />
+
+              <span className="toggle-password"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={0}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                {showPassword ? 
+                <VisibilityOutlined style={{ marginTop: "10px" }}/> 
+                : <VisibilityOffOutlined style={{ marginTop: "10px" }}/>}
+              </span>
+
+            </div>
+
 
             <p className="signupinputname2">Confirm Password</p>
-            <input
-              className="signupinputfield"
-              type="password"
-              placeholder="Re-enter your password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              disabled={loading}
-            />
+            <div className="password-container">
+              <input
+                className="signupinputfield"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="Confirm your password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={loading}
+              />
+
+              <span className="toggle-password"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                tabIndex={0}
+                aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                {showConfirmPassword ? 
+                <VisibilityOutlined style={{ marginTop: "10px" }}/> 
+                : <VisibilityOffOutlined style={{ marginTop: "10px" }}/>}
+              </span>
+            </div>
+
+            <div className="alertalert">
+            {message && <p className="loginerrormsg">{message}</p>}
+            </div>
+
           </div>
 
           <button className="signupbtn" onClick={handleSignup} disabled={loading}>

@@ -76,10 +76,10 @@ const Messages = () => {
       </div>
 
       <div className="chat-area">
-        <div className="top-bar">
+        {/* <div className="top-bar">
           <input type="text" placeholder="Search" className="msg-search" />
           <button className="compose-btn">Compose <NotesOutlined style={{ fontSize: 15, marginLeft: 5 }} /></button>
-        </div>
+        </div> */}
 
         <div className="chat-header">
           <hr className="chat-hr" />
